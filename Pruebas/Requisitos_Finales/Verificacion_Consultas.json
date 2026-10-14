@@ -1,0 +1,219 @@
+{
+  "CheckedAt": "2026-10-11T20:18:08.127439-06:00",
+  "Tests": [
+    {
+      "Table": "Clientes",
+      "Proc": "ConsultarClientes",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "Clientes",
+      "Proc": "ConsultarClientes",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "Clientes",
+      "Proc": "ConsultarClientes",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    },
+    {
+      "Table": "Empleados",
+      "Proc": "ConsultarEmpleados",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "Empleados",
+      "Proc": "ConsultarEmpleados",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "Empleados",
+      "Proc": "ConsultarEmpleados",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    },
+    {
+      "Table": "Usuarios",
+      "Proc": "ConsultarUsuarios",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "Usuarios",
+      "Proc": "ConsultarUsuarios",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "Usuarios",
+      "Proc": "ConsultarUsuarios",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    },
+    {
+      "Table": "Servicios",
+      "Proc": "ConsultarServicios",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "Servicios",
+      "Proc": "ConsultarServicios",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "Servicios",
+      "Proc": "ConsultarServicios",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    },
+    {
+      "Table": "Pedidos",
+      "Proc": "ConsultarPedidos",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "Pedidos",
+      "Proc": "ConsultarPedidos",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "Pedidos",
+      "Proc": "ConsultarPedidos",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    },
+    {
+      "Table": "DetallePedido",
+      "Proc": "ConsultarDetallePedido",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "DetallePedido",
+      "Proc": "ConsultarDetallePedido",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "DetallePedido",
+      "Proc": "ConsultarDetallePedido",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    },
+    {
+      "Table": "Pagos",
+      "Proc": "ConsultarPagos",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "Pagos",
+      "Proc": "ConsultarPagos",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "Pagos",
+      "Proc": "ConsultarPagos",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    },
+    {
+      "Table": "Recolecciones",
+      "Proc": "ConsultarRecolecciones",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "Recolecciones",
+      "Proc": "ConsultarRecolecciones",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "Recolecciones",
+      "Proc": "ConsultarRecolecciones",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    },
+    {
+      "Table": "Promociones",
+      "Proc": "ConsultarPromociones",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "Promociones",
+      "Proc": "ConsultarPromociones",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "Promociones",
+      "Proc": "ConsultarPromociones",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    },
+    {
+      "Table": "Inventario",
+      "Proc": "ConsultarInventario",
+      "Test": "Tabla completa",
+      "Rows": 3,
+      "Passed": true
+    },
+    {
+      "Table": "Inventario",
+      "Proc": "ConsultarInventario",
+      "Test": "Filtro por ID existente",
+      "Rows": 1,
+      "Passed": true
+    },
+    {
+      "Table": "Inventario",
+      "Proc": "ConsultarInventario",
+      "Test": "ID inexistente",
+      "Rows": 0,
+      "Passed": true
+    }
+  ],
+  "ConstraintsValid": true,
+  "TotalsValid": true,
+  "RealAdminPreserved": true,
+  "DemoAccountsInactive": true
+}

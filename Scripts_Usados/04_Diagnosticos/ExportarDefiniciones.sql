@@ -1,0 +1,3 @@
+USE LavaFacil;
+SELECT N'USE LavaFacil;' + CHAR(13)+CHAR(10)+N'GO'+CHAR(13)+CHAR(10) + STRING_AGG(CONVERT(NVARCHAR(MAX), OBJECT_DEFINITION(object_id)), CHAR(13)+CHAR(10)+N'GO'+CHAR(13)+CHAR(10)) WITHIN GROUP (ORDER BY type,name) + CHAR(13)+CHAR(10)+N'GO' AS Definicion
+FROM sys.objects WHERE schema_id = SCHEMA_ID('dbo') AND type IN ('P','TR');

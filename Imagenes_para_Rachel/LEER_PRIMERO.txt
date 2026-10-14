@@ -1,0 +1,15 @@
+LavaFácil — capturas del aplicativo para Rachel
+11 de octubre de 2026
+
+Estas son capturas reales del recorrido probado del aplicativo, no diseños generados.
+Los nombres, correos y registros que aparecen eran datos temporales de prueba y ya se eliminaron de la base de datos.
+
+01-inicio.jpg: panel de inicio, contadores reales y conexión a MADRENZO.
+02-servicios.jpg: consulta de servicios y estado de conexión.
+03-registro.jpg: formulario de registro de cliente.
+04-cliente-registrado.jpg: cliente guardado y búsqueda por cédula.
+05-perfil-editado.jpg: perfil del administrador con cambios guardados.
+06-cliente-permisos.jpg: perfil de cliente y navegación limitada según su rol.
+07-despues-de-limpiar.jpg: pantalla para crear la primera cuenta real, después de borrar los datos de prueba.
+
+La app no tiene barra lateral. La conmutación al Mirror de Rachel todavía no se ha configurado ni probado.

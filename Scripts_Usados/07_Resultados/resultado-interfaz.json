@@ -1,0 +1,138 @@
+[
+  {
+    "name": "Contador real: un servicio activo",
+    "passed": true
+  },
+  {
+    "name": "Contador real: un cliente",
+    "passed": true
+  },
+  {
+    "name": "Comprobar conexión reconoce MADRENZO",
+    "passed": true
+  },
+  {
+    "name": "Consulta excluye el servicio inactivo",
+    "passed": true
+  },
+  {
+    "name": "Tarifa y servicio provienen de la base",
+    "passed": true
+  },
+  {
+    "name": "Registro vacío no se envía",
+    "passed": true
+  },
+  {
+    "name": "Validación exige cédula",
+    "passed": true
+  },
+  {
+    "name": "Cancelar no crea clientes",
+    "passed": true
+  },
+  {
+    "name": "Registro rechaza correo con formato inválido",
+    "passed": true
+  },
+  {
+    "name": "Registro corregido persiste cliente y vuelve a la lista",
+    "passed": true
+  },
+  {
+    "name": "Búsqueda filtra por cédula",
+    "passed": true
+  },
+  {
+    "name": "Registro duplicado rechazado sin duplicar datos",
+    "passed": true
+  },
+  {
+    "name": "La lista sigue teniendo exactamente dos clientes",
+    "passed": true
+  },
+  {
+    "name": "Guardar perfil actualiza el nombre en la cabecera",
+    "passed": true
+  },
+  {
+    "name": "Perfil editado persiste: nombre, apellidos, teléfono y correo confirmados por SQL",
+    "passed": true
+  },
+  {
+    "name": "Nombre y apellidos del perfil persisten al recargar",
+    "passed": true
+  },
+  {
+    "name": "Contador de clientes refleja el registro realizado",
+    "passed": true
+  },
+  {
+    "name": "Cerrar sesión elimina el panel y la cabecera",
+    "passed": true
+  },
+  {
+    "name": "La sesión sigue cerrada después de recargar",
+    "passed": true
+  },
+  {
+    "name": "Login de empleado muestra su rol real",
+    "passed": true
+  },
+  {
+    "name": "Empleado tiene navegación de clientes",
+    "passed": true
+  },
+  {
+    "name": "Empleado puede consultar los dos clientes",
+    "passed": true
+  },
+  {
+    "name": "Empleado puede abrir el registro",
+    "passed": true
+  },
+  {
+    "name": "Cliente no ve menú de clientes",
+    "passed": true
+  },
+  {
+    "name": "Cliente no ve acciones de registro",
+    "passed": true
+  },
+  {
+    "name": "Acceso directo a clientes se bloquea para Cliente",
+    "passed": true
+  },
+  {
+    "name": "Cliente consulta los servicios activos",
+    "passed": true
+  },
+  {
+    "name": "Cliente ve solamente su propio perfil",
+    "passed": true
+  },
+  {
+    "name": "Edición del perfil de cliente persiste",
+    "passed": true
+  },
+  {
+    "name": "Cliente cierra sesión correctamente",
+    "passed": true
+  },
+  {
+    "name": "Contraseña incorrecta rechazada en el login (verificada al iniciar el recorrido)",
+    "passed": true
+  },
+  {
+    "name": "Mostrar y ocultar contraseña funcionan (verificado al iniciar el recorrido)",
+    "passed": true
+  },
+  {
+    "name": "Botón Actualizar repite la consulta de servicios (verificado en el recorrido)",
+    "passed": true
+  },
+  {
+    "name": "Después de limpiar no queda ninguna sesión de prueba",
+    "passed": true
+  }
+]

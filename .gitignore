@@ -1,0 +1,21 @@
+**/bin/
+**/obj/
+**/Data/
+*.user
+*.log
+
+# Credenciales, exportaciones privadas y respaldos de SQL Server
+*.dpapi*
+*.bak
+*.trn
+*.mdf
+*.ldf
+*.pfx
+*.p12
+*.pvk
+*.key
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.*.local.json

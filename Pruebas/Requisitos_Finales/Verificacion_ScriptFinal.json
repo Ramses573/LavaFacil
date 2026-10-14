@@ -1,0 +1,103 @@
+{
+  "CheckedAt": "2026-10-11T20:24:47.2317191-06:00",
+  "GeneratedBy": "SSMS 22 / Generar scripts / esquema y datos / incluir triggers",
+  "Tables": 10,
+  "Procedures": 50,
+  "Triggers": 2,
+  "DataInsertStatements": 30,
+  "Rows": [
+    {
+      "Table": "Clientes",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    },
+    {
+      "Table": "Empleados",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    },
+    {
+      "Table": "Usuarios",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    },
+    {
+      "Table": "Servicios",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    },
+    {
+      "Table": "Pedidos",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    },
+    {
+      "Table": "DetallePedido",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    },
+    {
+      "Table": "Pagos",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    },
+    {
+      "Table": "Recolecciones",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    },
+    {
+      "Table": "Promociones",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    },
+    {
+      "Table": "Inventario",
+      "Rows": 3,
+      "DataMatchesSourceExceptPasswords": true
+    }
+  ],
+  "Objects": [
+    {
+      "Type": "P",
+      "Source": 50,
+      "Restored": 50
+    },
+    {
+      "Type": "TR",
+      "Source": 2,
+      "Restored": 2
+    },
+    {
+      "Type": "PK",
+      "Source": 10,
+      "Restored": 10
+    },
+    {
+      "Type": "F",
+      "Source": 8,
+      "Restored": 8
+    },
+    {
+      "Type": "UQ",
+      "Source": 7,
+      "Restored": 7
+    },
+    {
+      "Type": "C",
+      "Source": 22,
+      "Restored": 22
+    },
+    {
+      "Type": "D",
+      "Source": 16,
+      "Restored": 16
+    }
+  ],
+  "ReconstructionPassed": true,
+  "QueriesPassed": true,
+  "TriggersPassed": true,
+  "PrivatePasswordsExcluded": true,
+  "TemporaryDatabaseRemoved": true,
+  "FinalSqlSha256": "3B61A17DD1B3F9CD6723432A1F6070537BF6C1C7E0E846E47158F1C25ADEFC65"
+}
