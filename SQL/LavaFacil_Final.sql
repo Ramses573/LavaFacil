@@ -1,8 +1,11 @@
-﻿-- LavaFacil: generado desde SSMS el 11/10/2026; esquema, datos, 50 SPs y 2 triggers.
--- Copia PARA COMPARTIR: las claves de Usuarios fueron sustituidas solo en este archivo.
--- Tu contraseña actual en MADRENZO NO se cambió.
--- Para usar la cuenta en una reconstrucción, establecer su clave antes de iniciar sesión.
--- Ejecutar en SSMS con Consulta > Modo SQLCMD. NO ejecutar sobre la base de trabajo existente.
+﻿-- Script de reconstrucción de LavaFacil generado desde SSMS el 11/10/2026.
+-- Incluye esquema, datos, 50 procedimientos almacenados y 2 triggers.
+-- Las contraseñas de dbo.Usuarios se sustituyeron por valores de reemplazo en esta copia.
+-- Las contraseñas de la base de origen no fueron modificadas.
+-- Los valores de reemplazo corresponden a cuentas del aplicativo, no a logins de SQL Server.
+-- Después de reconstruir la base, establecer las contraseñas de las cuentas antes de iniciar sesión.
+-- Ejecutar en SSMS con Consulta > Modo SQLCMD, únicamente para una reconstrucción en una base vacía.
+-- No ejecutar sobre la base de trabajo existente ni sobre el espejo de Mirroring.
 :ON ERROR EXIT
 USE [master]
 GO
@@ -820,8 +823,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
--- Complementos de Ramses para el miniaplicativo. No reemplaza SPs ni triggers existentes.
--- Se valida el estado actual de la cuenta en cada operación, no solo el rol de la cookie.
+-- Procedimiento de autorización del aplicativo LavaFacil.
+-- Valida el estado y los permisos de la cuenta en cada operación.
 CREATE   PROCEDURE [dbo].[app_Autorizar]
     @IdUsuario INT, @SoloPersonal BIT = 0
 AS
