@@ -230,3 +230,56 @@ BEGIN
     END CATCH;
 END;
 GO
+CREATE OR ALTER PROCEDURE dbo.app_ActualizarCliente
+    @IdUsuario INT,@IdCliente INT,@Cedula VARCHAR(20),@Nombre VARCHAR(50),@Apellidos VARCHAR(100),
+    @Telefono VARCHAR(20),@Email VARCHAR(150),@Direccion VARCHAR(250)=''
+AS
+BEGIN
+    SET NOCOUNT ON;
+    EXEC dbo.app_Autorizar @IdUsuario,1;
+    IF NULLIF(TRIM(@Cedula),'') IS NULL OR NULLIF(TRIM(@Nombre),'') IS NULL OR NULLIF(TRIM(@Apellidos),'') IS NULL
+       OR NULLIF(TRIM(@Telefono),'') IS NULL OR NULLIF(TRIM(@Email),'') IS NULL
+        THROW 50101,'Completa los datos obligatorios del cliente.',1;
+    UPDATE dbo.Clientes SET Cedula=TRIM(@Cedula),Nombre=TRIM(@Nombre),Apellidos=TRIM(@Apellidos),
+        Telefono=TRIM(@Telefono),Email=TRIM(@Email),Direccion=@Direccion
+    WHERE IdCliente=@IdCliente;
+    IF @@ROWCOUNT=0 THROW 50104,'El cliente no existe.',1;
+    SELECT IdCliente,Cedula,Nombre,Apellidos,Telefono,Email,Direccion,FechaRegistro,Activo
+    FROM dbo.Clientes WHERE IdCliente=@IdCliente;
+END;
+GO
+CREATE OR ALTER PROCEDURE dbo.app_CambiarEstadoCliente @IdUsuario INT,@IdCliente INT,@Activo BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+    EXEC dbo.app_Autorizar @IdUsuario,1;
+    BEGIN TRANSACTION;
+    UPDATE dbo.Clientes SET Activo=@Activo WHERE IdCliente=@IdCliente;
+    IF @@ROWCOUNT=0
+    BEGIN
+        ROLLBACK;
+        THROW 50104,'El cliente no existe.',1;
+    END;
+    -- Una cuenta de cliente no puede quedar activa si su perfil fue desactivado.
+    IF @Activo=0 UPDATE dbo.Usuarios SET Activo=0 WHERE IdCliente=@IdCliente;
+    COMMIT;
+    SELECT @IdCliente AS IdCliente,@Activo AS Activo;
+END;
+GO
+CREATE OR ALTER PROCEDURE dbo.app_EliminarClienteSeguro @IdUsuario INT,@IdCliente INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+    EXEC dbo.app_Autorizar @IdUsuario,1;
+    IF NOT EXISTS(SELECT 1 FROM dbo.Clientes WHERE IdCliente=@IdCliente)
+        THROW 50104,'El cliente no existe.',1;
+    IF EXISTS(SELECT 1 FROM dbo.Pedidos WHERE IdCliente=@IdCliente)
+        THROW 50101,'El cliente tiene pedidos relacionados. Desactívalo para conservar su historial.',1;
+    IF EXISTS(SELECT 1 FROM dbo.Usuarios WHERE IdCliente=@IdCliente)
+        THROW 50101,'El cliente tiene una cuenta de acceso. Desactívalo para conservar su historial.',1;
+    DELETE dbo.Clientes WHERE IdCliente=@IdCliente;
+    SELECT @IdCliente AS IdCliente;
+END;
+GO

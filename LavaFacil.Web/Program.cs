@@ -136,8 +136,8 @@ sealed class Database {
     public async Task<bool> HasFeatures() {
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
-        using var command = new SqlCommand("SELECT COUNT(*) FROM sys.procedures WHERE schema_id=SCHEMA_ID('dbo') AND name IN ('app_ExigirAdministrador','app_BuscarServicios','app_GuardarServicio','app_CrearPedido','app_BuscarPedidos','app_DetallePedido','app_CambiarEstadoPedido','app_Preferencias','app_GuardarPreferencias','app_Credencial','app_GuardarClave','app_CrearCuentaCliente')",connection);
-        return Convert.ToInt32(await command.ExecuteScalarAsync()) == 12;
+        using var command = new SqlCommand("SELECT COUNT(*) FROM sys.procedures WHERE schema_id=SCHEMA_ID('dbo') AND name IN ('app_ExigirAdministrador','app_BuscarServicios','app_GuardarServicio','app_CrearPedido','app_BuscarPedidos','app_DetallePedido','app_CambiarEstadoPedido','app_Preferencias','app_GuardarPreferencias','app_Credencial','app_GuardarClave','app_CrearCuentaCliente','app_ActualizarCliente','app_CambiarEstadoCliente','app_EliminarClienteSeguro')",connection);
+        return Convert.ToInt32(await command.ExecuteScalarAsync()) == 15;
     }
     public Database(IWebHostEnvironment env) {
         configPath = Path.Combine(env.ContentRootPath, "Data", "connection.dpapi");

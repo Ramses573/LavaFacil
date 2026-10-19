@@ -117,23 +117,42 @@ async function showServices(version) {
 }
 function contactFields(values = {}, client = false) {
   const field = (label, name, dbName, max, type = 'text', placeholder = '') => `<label>${label}<input name="${name}" type="${type}" maxlength="${max}" value="${escapeHtml(values[dbName])}" placeholder="${placeholder}" required ${type === 'email' ? 'autocomplete="email"' : ''}></label>`;
-  return (client ? field('Cédula', 'identity', 'Cedula', 20, 'text', 'Ej: 1-1234-5678') : '') + field('Nombre', 'name', 'Nombre', 50, 'text', 'Ingrese el nombre') + field('Apellidos', 'lastName', 'Apellidos', 100, 'text', 'Ingrese los apellidos') + field('Teléfono', 'phone', 'Telefono', 20, 'tel', 'Ej: 8888-8888') + field('Correo electrónico', 'email', 'Email', 150, 'email', 'ejemplo@correo.com') + (client ? '<label>Dirección (opcional)<input name="address" maxlength="250" placeholder="Dirección detallada"></label>' : '');
+  return (client ? field('Cédula', 'identity', 'Cedula', 20, 'text', 'Ej: 1-1234-5678') : '') + field('Nombre', 'name', 'Nombre', 50, 'text', 'Ingrese el nombre') + field('Apellidos', 'lastName', 'Apellidos', 100, 'text', 'Ingrese los apellidos') + field('Teléfono', 'phone', 'Telefono', 20, 'tel', 'Ej: 8888-8888') + field('Correo electrónico', 'email', 'Email', 150, 'email', 'ejemplo@correo.com') + (client ? `<label>Dirección (opcional)<input name="address" maxlength="250" value="${escapeHtml(values.Direccion)}" placeholder="Dirección detallada"></label>` : '');
 }
 function showRegister() {
   page('Registrar cliente', 'Completa los datos del nuevo cliente', '', `<section class="card form-card"><form id="client-form" class="form-grid">${contactFields({}, true)}<div class="form-error full" role="alert" hidden></div><div class="form-actions full"><button class="button primary" type="submit">✓ Guardar cliente</button><a href="#clients" class="button light">Cancelar</a></div></form></section><p class="footer-status"></p>`);
   bindForm($('#client-form'), async values => { const result = await request('clients', values); recordConnection(result); notify('Cliente registrado correctamente · ID ' + result.rows[0].IdCliente); location.hash = 'clients'; });
 }
 async function showClients(version) {
-  page('Clientes', 'Consulta y registra los clientes de LavaFácil', '<a href="#register" class="button primary">+ Registrar cliente</a>', `<div class="list-toolbar"><input id="client-search" class="search" type="search" placeholder="Buscar por nombre, cédula o correo" aria-label="Buscar clientes"><div><button class="button light small" id="refresh-clients">↻ Actualizar</button></div></div><section class="card table-card"><table><thead><tr><th>Cliente</th><th>Cédula</th><th>Teléfono</th><th>Correo electrónico</th><th>Estado</th></tr></thead><tbody id="clients-body"><tr><td colspan="5" class="table-empty">Consultando clientes…</td></tr></tbody></table></section><p class="footer-status"></p>`);
+  page('Clientes', 'Administra los clientes y conserva su historial', '<a href="#register" class="button primary">+ Registrar cliente</a>', `<div class="list-toolbar"><input id="client-search" class="search" type="search" placeholder="Buscar por nombre, cédula o correo" aria-label="Buscar clientes"><div><button class="button light small" id="refresh-clients">↻ Actualizar</button></div></div><div id="client-editor"></div><section class="card table-card"><table><thead><tr><th>Cliente</th><th>Cédula</th><th>Teléfono</th><th>Correo electrónico</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="clients-body"><tr><td colspan="6" class="table-empty">Consultando clientes…</td></tr></tbody></table></section><p class="subtle">Si el cliente tiene pedidos o una cuenta de acceso, debe desactivarse en lugar de eliminarse.</p><p class="footer-status"></p>`);
+  function editor(row) {
+    $('#client-editor').innerHTML=`<section class="card form-card editor"><h2>Editar cliente</h2><form id="client-edit-form" class="form-grid">${contactFields(row,true)}<div class="form-error full" role="alert" hidden></div><div class="form-actions full"><button class="button primary" type="submit">Guardar cambios</button><button class="button light" id="cancel-client-edit" type="button">Cancelar</button></div></form></section>`;
+    $('#cancel-client-edit').onclick=()=>$('#client-editor').replaceChildren();
+    bindForm($('#client-edit-form'),async values=>{const result=await request(`clients/${row.IdCliente}`,values);if(version!==state.routeVersion)return;recordConnection(result);$('#client-editor').replaceChildren();notify('Cliente actualizado correctamente');await refresh();});
+    $('#client-editor input').focus();$('#client-editor').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  async function changeStatus(row) {
+    const action=row.Activo?'desactivar':'activar';
+    if(!confirm(`¿Deseas ${action} a ${row.Nombre} ${row.Apellidos}?`))return;
+    const result=await request(`clients/${row.IdCliente}/status`,{active:!row.Activo});recordConnection(result);notify(`Cliente ${row.Activo?'desactivado':'activado'} correctamente`);await refresh();
+  }
+  async function remove(row) {
+    if(!confirm(`¿Eliminar definitivamente a ${row.Nombre} ${row.Apellidos}? Esta acción solo se permite si no tiene pedidos ni cuenta de acceso.`))return;
+    try{const result=await request(`clients/${row.IdCliente}/delete`,{});recordConnection(result);notify('Cliente eliminado correctamente');await refresh();}
+    catch(error){displayError(error.message);}
+  }
   function draw() {
     const term = $('#client-search').value.trim().toLocaleLowerCase('es');
     const rows = state.clients.filter(row => `${row.Nombre} ${row.Apellidos} ${row.Cedula} ${row.Email}`.toLocaleLowerCase('es').includes(term));
-    $('#clients-body').innerHTML = rows.length ? rows.map(row => `<tr><td class="name-cell">${escapeHtml(row.Nombre)} ${escapeHtml(row.Apellidos)}</td><td>${escapeHtml(row.Cedula)}</td><td>${escapeHtml(row.Telefono)}</td><td>${escapeHtml(row.Email)}</td><td><span class="badge ${row.Activo ? '' : 'inactive'}">${row.Activo ? 'Activo' : 'Inactivo'}</span></td></tr>`).join('') : '<tr><td colspan="5" class="table-empty">No hay clientes que mostrar.</td></tr>';
+    $('#clients-body').innerHTML = rows.length ? rows.map(row => `<tr><td class="name-cell">${escapeHtml(row.Nombre)} ${escapeHtml(row.Apellidos)}<p class="subtle">${escapeHtml(row.Direccion||'Sin dirección')}</p></td><td>${escapeHtml(row.Cedula)}</td><td>${escapeHtml(row.Telefono)}</td><td>${escapeHtml(row.Email)}</td><td><span class="badge ${row.Activo ? '' : 'inactive'}">${row.Activo ? 'Activo' : 'Inactivo'}</span></td><td><div class="inline-actions"><button class="button light small edit-client" data-id="${row.IdCliente}">Editar</button><button class="button light small status-client" data-id="${row.IdCliente}">${row.Activo?'Desactivar':'Activar'}</button><button class="button danger small delete-client" data-id="${row.IdCliente}">Eliminar</button></div></td></tr>`).join('') : '<tr><td colspan="6" class="table-empty">No hay clientes que mostrar.</td></tr>';
+    document.querySelectorAll('.edit-client').forEach(button=>button.onclick=()=>editor(state.clients.find(row=>row.IdCliente===Number(button.dataset.id))));
+    document.querySelectorAll('.status-client').forEach(button=>button.onclick=()=>changeStatus(state.clients.find(row=>row.IdCliente===Number(button.dataset.id))).catch(error=>displayError(error.message)));
+    document.querySelectorAll('.delete-client').forEach(button=>button.onclick=()=>remove(state.clients.find(row=>row.IdCliente===Number(button.dataset.id))));
   }
   async function refresh() {
     const button = $('#refresh-clients'); button.disabled = true;
     try { const result = await request('clients'); if (version !== state.routeVersion) return; state.clients = result.rows; recordConnection(result); $('#page-error').hidden = true; draw(); }
-    catch (error) { if (version === state.routeVersion) { failConnection(error); $('#clients-body').innerHTML = '<tr><td colspan="5" class="table-empty">No se pudo consultar. Vuelve a intentar con Actualizar.</td></tr>'; } }
+    catch (error) { if (version === state.routeVersion) { failConnection(error); $('#clients-body').innerHTML = '<tr><td colspan="6" class="table-empty">No se pudo consultar. Vuelve a intentar con Actualizar.</td></tr>'; } }
     finally { if (version === state.routeVersion) button.disabled = false; }
   }
   $('#client-search').addEventListener('input', draw); $('#refresh-clients').addEventListener('click', refresh); await refresh();

@@ -48,6 +48,20 @@ static class FeatureRoutes
             await db.Call("app_ExigirAdministrador",new[]{Database.Id(ctx)});
             return await db.Call("app_CrearCuentaCliente",new[]{Database.Id(ctx),Int("IdCliente",input.ClientId),Database.Param("NombreUsuario",input.Username.Trim(),50),Database.Param("Hash",AppPasswords.Hash(input.Password),255)});
         });
+        api.MapPost("/clients/{id:int}",async(int id,ClientEditInput input,HttpContext ctx,Database db)=>{
+            Database.Required(input.Identity,"Cédula",20); Database.Required(input.Name,"Nombre",50);
+            Database.Required(input.LastName,"Apellidos",100); Database.Required(input.Phone,"Teléfono",20);
+            Database.Required(input.Email,"Correo",150); Text(input.Address,250);
+            if(!System.Net.Mail.MailAddress.TryCreate(input.Email,out var parsed) || parsed.Address!=input.Email)
+                throw new ArgumentException("Ingresa un correo electrónico válido.");
+            return await db.Call("app_ActualizarCliente",new[]{Database.Id(ctx),Int("IdCliente",id),Database.Param("Cedula",input.Identity.Trim(),20),
+                Database.Param("Nombre",input.Name.Trim(),50),Database.Param("Apellidos",input.LastName.Trim(),100),Database.Param("Telefono",input.Phone.Trim(),20),
+                Database.Param("Email",input.Email.Trim(),150),Database.Param("Direccion",input.Address?.Trim(),250)});
+        });
+        api.MapPost("/clients/{id:int}/status",async(int id,ClientStatusInput input,HttpContext ctx,Database db)=>
+            await db.Call("app_CambiarEstadoCliente",new[]{Database.Id(ctx),Int("IdCliente",id),Bit("Activo",input.Active)}));
+        api.MapPost("/clients/{id:int}/delete",async(int id,HttpContext ctx,Database db)=>
+            await db.Call("app_EliminarClienteSeguro",new[]{Database.Id(ctx),Int("IdCliente",id)}));
         api.MapPost("/password",async(PasswordInput input,HttpContext ctx,Database db)=>{
             Database.Required(input.CurrentPassword,"Contraseña actual",255); AppPasswords.CheckNew(input.NewPassword);
             var result=await AppPasswords.Authenticate(db,ctx.User.Identity!.Name!,input.CurrentPassword);
@@ -93,4 +107,6 @@ record OrderInput(int? ClientId,string? Notes,OrderLine[] Lines);
 record OrderStatus(string Status);
 record PreferencesInput(string Avatar,string Theme,string? Bio,string? Address);
 record ClientAccountInput(int ClientId,string Username,string Password);
+record ClientEditInput(string Identity,string Name,string LastName,string Phone,string Email,string? Address);
+record ClientStatusInput(bool Active);
 record PasswordInput(string CurrentPassword,string NewPassword);
