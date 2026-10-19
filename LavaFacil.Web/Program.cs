@@ -12,7 +12,7 @@ using System.Runtime.Versioning;
 [assembly: SupportedOSPlatform("windows")]
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://127.0.0.1:5088");
+builder.WebHost.UseUrls(builder.Configuration["Urls"] ?? "http://127.0.0.1:5088");
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o => {
     o.Cookie.Name = "LavaFacil.Session";
     o.Cookie.HttpOnly = true;
@@ -24,6 +24,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.AddAntiforgery(o => { o.HeaderName = "X-CSRF-TOKEN"; o.Cookie.SameSite = SameSiteMode.Strict; });
 builder.Services.AddSingleton<Database>();
+builder.Services.AddSingleton<MirrorMonitor>();
 var app = builder.Build();
 // El token CSRF debe validarse contra la identidad recuperada de la cookie.
 app.UseAuthentication();
@@ -37,7 +38,7 @@ app.Use(async (ctx, next) => {
         if (HttpMethods.IsPost(ctx.Request.Method)) await ctx.RequestServices.GetRequiredService<IAntiforgery>().ValidateRequestAsync(ctx);
         await next();
     } catch (AntiforgeryValidationException) { ctx.Response.StatusCode = 400; await ctx.Response.WriteAsJsonAsync(new { error = "La sesión del formulario venció. Recarga la página." }); }
-    catch (SqlException ex) { ctx.Response.StatusCode = 503; await ctx.Response.WriteAsJsonAsync(new { error = DbErrors.Message(ex) }); }
+    catch (SqlException ex) { ctx.Response.StatusCode = ex.Number == 50100 ? 403 : ex.Number == 50104 ? 404 : ex.Number >= 50000 ? 400 : 503; await ctx.Response.WriteAsJsonAsync(new { error = DbErrors.Message(ex) }); }
     catch (ArgumentException ex) { ctx.Response.StatusCode = 400; await ctx.Response.WriteAsJsonAsync(new { error = ex.Message }); }
     catch (InvalidOperationException ex) { ctx.Response.StatusCode = 400; await ctx.Response.WriteAsJsonAsync(new { error = ex.Message }); }
     catch (Exception) { ctx.Response.StatusCode = 500; await ctx.Response.WriteAsJsonAsync(new { error = "No se pudo completar la operación. Revisa la conexión y vuelve a intentarlo." }); }
@@ -48,13 +49,18 @@ app.UseAuthorization();
 
 app.MapGet("/api/bootstrap", async (HttpContext ctx, IAntiforgery csrf, Database db) => {
     var needsAccount = false;
+    var featuresReady = false;
     if (db.Configured && ctx.User.Identity?.IsAuthenticated != true) {
         try { var initial = await db.Call("app_EstadoInicial", Array.Empty<SqlParameter>()); needsAccount = Convert.ToBoolean(initial.Rows[0]["RequiereAdministrador"]); }
         catch (SqlException) { /* Login sigue disponible para mostrar el error de conexión al intentar entrar. */ }
     }
+    if (db.Configured) {
+        try { featuresReady = await db.HasFeatures(); }
+        catch (SqlException) { /* La pantalla de conexión informará la indisponibilidad. */ }
+    }
     return Results.Json(new {
         token = csrf.GetAndStoreTokens(ctx).RequestToken,
-        configured = db.Configured, needsAccount,
+        configured = db.Configured, needsAccount, featuresReady,
         user = ctx.User.Identity?.IsAuthenticated == true ? new { id = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier), name = ctx.User.Identity.Name, role = ctx.User.FindFirstValue(ClaimTypes.Role) } : null
     });
 });
@@ -67,7 +73,7 @@ app.MapPost("/api/setup", async (ConnectionInput input, Database db) => {
 app.MapPost("/api/login", async (LoginInput input, Database db, HttpContext ctx) => {
     Database.Required(input.Username, "Usuario", 50);
     Database.Required(input.Password, "Contraseña", 255);
-    var result = await db.Call("usp_ValidarLogin", new[] { Database.Param("NombreUsuario", input.Username, 50), Database.Param("Clave", input.Password, 255) });
+    var result = await AppPasswords.Authenticate(db, input.Username, input.Password);
     var row = result.Rows.FirstOrDefault();
     if (row is null || !Convert.ToBoolean(row["LoginValido"])) return Results.Json(new { error = "Usuario o contraseña incorrectos, o cuenta inactiva." }, statusCode: 401);
     var claims = new[] { new Claim(ClaimTypes.NameIdentifier, Convert.ToString(row["IdUsuario"])!), new Claim(ClaimTypes.Name, Convert.ToString(row["NombreUsuario"])!), new Claim(ClaimTypes.Role, Convert.ToString(row["TipoUsuario"])!) };
@@ -100,6 +106,14 @@ authenticated.MapPost("/clients", async (ClientInput input, HttpContext ctx, Dat
     if (input.Address?.Length > 250) throw new ArgumentException("La dirección admite hasta 250 caracteres.");
     return Results.Ok(await db.Call("app_RegistrarCliente", new[] { Database.Id(ctx), Database.Param("Cedula", input.Identity.Trim(), 20), Database.Param("Nombre", input.Name.Trim(), 50), Database.Param("Apellidos", input.LastName.Trim(), 100), Database.Param("Telefono", input.Phone.Trim(), 20), Database.Param("Email", input.Email.Trim(), 150), Database.Param("Direccion", input.Address?.Trim(), 250) }));
 });
+FeatureRoutes.Map(authenticated);
+authenticated.MapGet("/health", async (HttpContext ctx, MirrorMonitor monitor) => {
+    var result = await monitor.Check();
+    // Clientes y empleados reciben solo disponibilidad; la topología es exclusiva del administrador.
+    if (ctx.User.IsInRole("Administrador")) return Results.Json((object)result);
+    return Results.Json((object)new { result.CheckedAt, result.ApplicationAvailable,
+        message = result.ApplicationAvailable ? "Conexión disponible." : "No podemos confirmar la conexión. Conserva el formulario y vuelve a comprobar antes de guardar." });
+});
 app.Run();
 
 static void ValidateContact(string name, string lastName, string phone, string email) {
@@ -118,6 +132,13 @@ sealed class Database {
     private string? connectionString;
     private readonly SemaphoreSlim setupLock = new(1, 1);
     public bool Configured => !string.IsNullOrEmpty(connectionString);
+    internal string? MonitoringConnection => connectionString;
+    public async Task<bool> HasFeatures() {
+        using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+        using var command = new SqlCommand("SELECT COUNT(*) FROM sys.procedures WHERE schema_id=SCHEMA_ID('dbo') AND name IN ('app_ExigirAdministrador','app_BuscarServicios','app_GuardarServicio','app_CrearPedido','app_BuscarPedidos','app_DetallePedido','app_CambiarEstadoPedido','app_Preferencias','app_GuardarPreferencias','app_Credencial','app_GuardarClave','app_CrearCuentaCliente')",connection);
+        return Convert.ToInt32(await command.ExecuteScalarAsync()) == 12;
+    }
     public Database(IWebHostEnvironment env) {
         configPath = Path.Combine(env.ContentRootPath, "Data", "connection.dpapi");
         if (File.Exists(configPath)) connectionString = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(configPath), null, DataProtectionScope.CurrentUser));
@@ -165,7 +186,7 @@ static class DbErrors {
     public static string Message(SqlException ex) => ex.Number switch {
         18456 => "SQL Server rechazó el usuario SQL o su contraseña. No es la cuenta del login de LavaFácil.",
         4060 => "El usuario SQL no tiene acceso a la base de datos indicada.",
-        2812 => "Falta un procedimiento de la app. Ejecuta SQL/01_Procedimientos_App.sql en LavaFacil.",
+        2812 or 207 or 208 => "Falta actualizar la base. Ejecuta SQL/01_Procedimientos_App.sql y SQL/04_Mejoras_Aplicativo.sql en LavaFacil del servidor principal.",
         2601 or 2627 => "Ya existe un registro con esa cédula o correo electrónico.",
         547 => "Los datos no cumplen las reglas de la base de datos.",
         >= 50000 => ex.Message,

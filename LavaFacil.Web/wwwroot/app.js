@@ -44,11 +44,15 @@ function setHeader() {
   $('#account-role').textContent = state.user.role;
   $('#avatar').textContent = (state.profile?.Nombre || state.user.name).slice(0, 2).toUpperCase();
   $('#clients-nav').hidden = !isStaff();
+  $('#orders-nav').textContent = isStaff() ? 'Pedidos' : 'Mis pedidos';
+  $('#orders-nav').hidden = !state.featuresReady;
+  if (state.preferences) applyPreferences(state.preferences);
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('active', a.dataset.route === location.hash.slice(1)));
 }
 function page(title, subtitle, action, content) {
   app.innerHTML = `<div class="page"><div class="page-heading"><div><h1>${title}</h1><p class="subtitle">${subtitle}</p></div>${action || ''}</div><div id="page-error" class="notice error" role="alert" hidden></div><div id="connection-change" class="notice" role="status" hidden></div>${content}</div>`;
   updateStatus();
+  if (!state.featuresReady && isStaff()) $('.page-heading').insertAdjacentHTML('afterend','<div class="notice">Las mejoras están pendientes de activación. Ejecuta SQL/04_Mejoras_Aplicativo.sql en la base del servidor principal y recarga esta página. Las funciones anteriores siguen disponibles.</div>');
   document.querySelectorAll('.check-connection').forEach(button => button.addEventListener('click', async () => {
     button.disabled = true;
     try { recordConnection(await request('home')); $('#page-error').hidden = true; notify('Conexión comprobada con ' + state.connection.server); }
@@ -92,6 +96,10 @@ async function showHome(version) {
     recordConnection(result); $('#service-count').textContent = result.rows[0].ServiciosActivos;
     if (isStaff()) $('#client-count').textContent = result.rows[0].ClientesActivos;
     if (!state.profile) { const profile = await request('profile'); if (version !== state.routeVersion) return; recordConnection(profile); state.profile = profile.rows[0]; setHeader(); }
+    if (state.featuresReady) {
+      if (!state.preferences) { const prefs = await request('preferences'); if (version !== state.routeVersion) return; state.preferences = prefs.rows[0]; setHeader(); }
+      $('.actions-card').insertAdjacentHTML('beforeend', '<a href="#new-order" class="button primary">+ Solicitar servicios</a><a href="#orders" class="button light">Consultar pedidos</a>');
+    }
   } catch (error) { if (version === state.routeVersion) failConnection(error); }
 }
 async function showServices(version) {
@@ -138,6 +146,7 @@ async function showProfile(version) {
     $('#profile-content').outerHTML = `<div class="profile-layout"><section class="card profile-summary"><span class="avatar">${escapeHtml(p.Nombre.slice(0, 2).toUpperCase())}</span><h2>${escapeHtml(p.Nombre)} ${escapeHtml(p.Apellidos)}</h2><span class="badge">${escapeHtml(p.TipoUsuario)}</span><p>Usuario: <strong>${escapeHtml(p.NombreUsuario)}</strong></p><p>Cédula: ${escapeHtml(p.Cedula)}</p><p class="muted">El rol y la cédula no se modifican desde esta pantalla.</p></section><section class="card form-card"><h2>Información personal</h2><form id="profile-form" class="form-grid">${contactFields(p)}<div class="form-error full" role="alert" hidden></div><div class="form-actions full"><button type="submit" class="button primary">Guardar cambios</button><a href="#home" class="button light">Volver</a></div></form></section></div><p class="footer-status"></p>`;
     updateStatus();
     bindForm($('#profile-form'), async values => { const updated = await request('profile', values); recordConnection(updated); state.profile = updated.rows[0]; setHeader(); notify('Tu perfil se actualizó correctamente'); await showProfile(++state.routeVersion); });
+    if (state.featuresReady) await extendProfile(version);
   } catch (error) { if (version === state.routeVersion) failConnection(error); }
 }
 async function route() {
@@ -145,22 +154,30 @@ async function route() {
   if (!state.configured) { state.user = null; setHeader(); showSetup(); return; }
   if (!state.user) { setHeader(); if(state.needsAccount) showFirstAccount(); else showLogin(); return; }
   setHeader();
+  if (!state.featuresReady && ['orders','new-order','client-account'].includes(routeName)) { location.hash='home'; notify('Las nuevas funciones están pendientes de activar en la base de datos.'); return; }
+  if (state.featuresReady && !state.preferences) {
+    try { const [profile,prefs] = await Promise.all([request('profile'),request('preferences')]); if(version!==state.routeVersion)return;state.profile=profile.rows[0];state.preferences=prefs.rows[0];setHeader(); }
+    catch { /* La pantalla seleccionada presenta el error de conexión si continúa. */ }
+  }
   if ((routeName === 'clients' || routeName === 'register') && !isStaff()) { location.hash = 'home'; notify('Esta función está disponible para empleados y administradores.'); return; }
   switch (routeName) {
-    case 'services': await showServices(version); break;
+    case 'services': if(state.featuresReady) await showCatalog(version); else await showServices(version); break;
+    case 'orders': await showOrders(version); break;
+    case 'new-order': await showNewOrder(version); break;
+    case 'client-account': if(isAdmin()) await showClientAccount(version); else { location.hash='home'; notify('Solo administradores pueden crear cuentas.'); } break;
     case 'clients': await showClients(version); break;
     case 'register': showRegister(); break;
     case 'profile': await showProfile(version); break;
     default: await showHome(version);
   }
 }
-async function refreshToken() { const result = await request('bootstrap'); state.token = result.token; state.needsAccount = result.needsAccount; }
+async function refreshToken() { const result = await request('bootstrap'); state.token = result.token; state.needsAccount = result.needsAccount; state.featuresReady = result.featuresReady; }
 $('#logout').addEventListener('click', async () => {
-  try { await request('logout', {}); state.user = null; state.profile = null; state.connection = null; state.change = ''; await refreshToken(); location.hash = 'login'; await route(); }
+  try { await request('logout', {}); state.user = null; state.profile = null; state.preferences = null; document.documentElement.removeAttribute('data-theme'); state.connection = null; state.change = ''; await refreshToken(); location.hash = 'login'; await route(); }
   catch (error) { notify(error.message); }
 });
 window.addEventListener('hashchange', route);
 (async () => {
-  try { const data = await request('bootstrap'); Object.assign(state, { token:data.token, user:data.user, configured:data.configured, needsAccount:data.needsAccount }); $('#loading').hidden = true; app.hidden = false; await route(); }
+  try { const data = await request('bootstrap'); Object.assign(state, { token:data.token, user:data.user, configured:data.configured, needsAccount:data.needsAccount, featuresReady:data.featuresReady }); $('#loading').hidden = true; app.hidden = false; await route(); }
   catch (error) { $('#loading').textContent = 'No se pudo iniciar LavaFácil. ' + error.message; }
 })();

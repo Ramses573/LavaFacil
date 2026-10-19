@@ -1,14 +1,16 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LavaFácil · Gestión de lavandería</title><link rel="icon" href="/logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LavaFácil · Gestión de lavandería</title><link rel="icon" href="/logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/features.css"><script defer src="/app.js"></script><script defer src="/features.js"></script></head>
 <body>
 <div id="loading" class="loading">Preparando LavaFácil…</div>
 <div id="toast" class="toast" role="status" hidden></div>
 <header id="header" hidden>
   <a class="brand" href="#home"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></a>
-  <nav aria-label="Navegación principal"><a href="#home" data-route="home">Inicio</a><a href="#services" data-route="services">Servicios</a><a href="#clients" data-route="clients" id="clients-nav">Clientes</a></nav>
+  <nav aria-label="Navegación principal"><a href="#home" data-route="home">Inicio</a><a href="#services" data-route="services">Servicios</a><a href="#orders" data-route="orders" id="orders-nav">Pedidos</a><a href="#clients" data-route="clients" id="clients-nav">Clientes</a><a href="#profile" data-route="profile">Mi perfil</a></nav>
   <div class="account"><a href="#profile" class="profile-link" title="Ver y editar mi perfil"><span id="avatar" class="avatar">—</span><span><strong id="account-name"></strong><small id="account-role"></small></span></a><button id="logout" class="button light small">Cerrar sesión</button></div>
 </header>
+<section id="monitor" aria-label="Estado de servidores" hidden></section>
+<script defer src="/monitor.js"></script>
 <main id="app" hidden></main>
 <template id="login-template">
   <div class="auth-shell"><div class="bubbles" aria-hidden="true"></div><section class="auth-card card">
@@ -22,13 +24,13 @@
 </template>
 <template id="setup-template">
   <div class="setup-shell"><section class="card setup-card"><div class="brand auth-brand"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></div><h1>Conectemos tu servidor</h1><p class="muted">Solo necesitas configurar esto una vez en tu laptop.</p>
-  <div class="notice">Primero ejecuta <strong>SQL/01_Procedimientos_App.sql</strong> en la base LavaFacil desde SSMS. No modifica tus tablas ni triggers.</div>
+  <div class="notice">Primero ejecuta <strong>SQL/01_Procedimientos_App.sql</strong> y después <strong>SQL/04_Mejoras_Aplicativo.sql</strong> en la base LavaFacil del servidor principal desde SSMS.</div>
   <form id="setup-form" class="form-grid">
   <label>Servidor principal<input name="server" value="100.98.252.109,1433" maxlength="200" required></label>
   <label>Base de datos<input name="database" value="LavaFacil" maxlength="128" required></label>
   <label>Usuario de SQL Server<input name="username" value="ramses_proyecto" maxlength="128" autocomplete="username" required></label>
   <label>Contraseña del usuario SQL<span class="password-field"><input name="password" type="password" maxlength="255" autocomplete="current-password" required><button type="button" class="eye" aria-label="Mostrar contraseña" aria-pressed="false">◉</button></span></label>
-  <label class="full">Servidor espejo (opcional)<input name="failoverPartner" placeholder="Completar cuando el Mirror de Rachel esté listo" maxlength="200"><small>Déjalo vacío por ahora. No es necesario instalar el servidor SQL en la laptop.</small></label>
+  <label class="full">Servidor compañero (opcional)<input name="failoverPartner" placeholder="100.117.134.120,56640" maxlength="200"><small>Dirección del otro servidor SQL, cuando Mirroring esté configurado. No uses el puerto 5022.</small></label>
   <div class="form-error full" role="alert" hidden></div><div class="form-actions full"><button class="button primary" type="submit">Verificar y guardar conexión</button></div>
   </form><p class="auth-foot">La contraseña se guarda cifrada con Windows, no en el código.</p></section></div>
 </template>

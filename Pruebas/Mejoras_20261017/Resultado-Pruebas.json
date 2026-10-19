@@ -1,0 +1,110 @@
+[
+  {
+    "Prueba": "Consulta anónima rechazada",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Login administrador y empleado existentes",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Formulario sin CSRF rechazado",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Administrador registra servicios",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Empleado no administra servicios",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Cuentas de cliente con hash inician sesión",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Cliente no consulta clientes ni administra servicios/cuentas",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Pedido con dos servicios total correcto",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Cliente no puede asignar su pedido a otro cliente",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Detalle tiene las dos líneas",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Pedido ajeno no accesible por ID",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Cliente no cambia estados",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Personal actualiza estado",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Filtros por cliente, estado y servicio",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Rango de fechas invertido rechazado",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Editar tarifa conserva precio histórico",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Servicio desactivado no se ofrece al cliente",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Pedido inválido revierte todas las líneas",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Cantidades cero y servicios repetidos rechazados",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Unidades fraccionadas rechazadas",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Personalización y dirección privadas por usuario",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Avatar inválido rechazado",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Cambio de contraseña cierra sesión y acepta la nueva",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Contraseña anterior rechazada",
+    "Correcta": true
+  },
+  {
+    "Prueba": "No duplica cuenta del cliente",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Personal registra pedido para cliente seleccionado",
+    "Correcta": true
+  },
+  {
+    "Prueba": "Perfil existente sigue actualizándose",
+    "Correcta": true
+  }
+]
