@@ -1,0 +1,4 @@
+IdInventario;NombreProducto;Descripcion;Cantidad;UnidadMedida;CantidadMinima;FechaActualizacion;Activo
+2001;Detergente líquido;Detergente concentrado;25.00;Litro;5.00;2026-10-24 10:00:00;1
+2002;Suavizante;Suavizante floral;18.00;Litro;4.00;2026-10-24 10:00:00;1
+2003;Bolsas transparentes;Bolsas para entrega;150.00;Unidad;30.00;2026-10-24 10:00:00;1

@@ -1,0 +1,4 @@
+IdRecoleccion;IdPedido;Direccion;FechaProgramada;Estado;Observaciones
+2001;2001;Turrialba centro;2026-10-24 11:00:00;Programada;Dato de prueba Proyecto 2
+2002;2002;La Suiza Turrialba;2026-10-24 11:30:00;En camino;Dato de prueba Proyecto 2
+2003;2003;Santa Cruz Turrialba;2026-10-24 12:00:00;Completada;Dato de prueba Proyecto 2

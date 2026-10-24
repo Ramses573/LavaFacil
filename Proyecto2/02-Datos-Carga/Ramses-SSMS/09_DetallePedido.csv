@@ -1,0 +1,4 @@
+IdDetalle;IdPedido;IdServicio;Cantidad;PrecioBase;MontoAdicional;Subtotal
+2001;2001;2001;2.00;1800.00;0.00;3600.00
+2002;2002;2002;1.00;6500.00;0.00;6500.00
+2003;2003;2003;2.00;3000.00;0.00;6000.00

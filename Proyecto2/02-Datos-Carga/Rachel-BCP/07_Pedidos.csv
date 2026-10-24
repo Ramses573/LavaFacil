@@ -1,0 +1,4 @@
+IdPedido;IdCliente;FechaPedido;FechaEntregaEstimada;Estado;Total;Observaciones
+2001;2001;2026-10-24 09:00:00;2026-10-26 15:00:00;Pendiente;3600.00;Carga BCP Proyecto 2
+2002;2002;2026-10-24 09:15:00;2026-10-27 16:00:00;Recibido;6500.00;Carga BCP Proyecto 2
+2003;2003;2026-10-24 09:30:00;2026-10-28 14:00:00;En proceso;6000.00;Carga BCP Proyecto 2
