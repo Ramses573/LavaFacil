@@ -56,4 +56,11 @@ Cada carga debe conservar las evidencias exigidas por la rúbrica: archivo de or
 
 ## Estado técnico
 
-El proyecto compila sin advertencias ni errores. La verificación contra la base real requiere configurar localmente las cadenas de conexión y ejecutar las cargas en el servidor principal. Después de terminar las cargas, el script final de estructura y datos debe regenerarse desde SSMS para que contenga el estado definitivo solicitado por la rúbrica.
+- Las diez tablas tienen sus tres registros de prueba 2001–2003 en el servidor principal.
+- La evidencia de Ramses incluye una carga real mediante el Asistente de importación de SSMS y la consulta final de sus cinco tablas.
+- Los estados de `Recolecciones` se ajustaron al `CHECK`: `Programada`, `Recolectada` y `Cancelada`.
+- Los tres logins privados de GraphQL se crean únicamente en SQL Server; sus contraseñas permanecen fuera del repositorio.
+- Los roles `gql_invitado`, `gql_cliente` y `gql_empleado` fueron verificados mediante procedimientos almacenados autorizados.
+- El backend compila sin advertencias ni errores.
+
+Todavía debe regenerarse desde SSMS el script final de estructura y datos y unificarse el documento de evidencias de ambos integrantes.

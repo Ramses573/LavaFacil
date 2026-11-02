@@ -23,8 +23,8 @@ INSERT INTO dbo.Recolecciones
     (IdRecoleccion, IdPedido, Direccion, FechaProgramada, Estado, Observaciones)
 VALUES
     (2001, 2001, 'Turrialba centro',     '2026-10-24T11:00:00', 'Programada', 'Dato de prueba Proyecto 2'),
-    (2002, 2002, 'La Suiza Turrialba',   '2026-10-24T11:30:00', 'En camino',  'Dato de prueba Proyecto 2'),
-    (2003, 2003, 'Santa Cruz Turrialba', '2026-10-24T12:00:00', 'Completada', 'Dato de prueba Proyecto 2');
+    (2002, 2002, 'La Suiza Turrialba',   '2026-10-24T11:30:00', 'Recolectada', 'Dato de prueba Proyecto 2'),
+    (2003, 2003, 'Santa Cruz Turrialba', '2026-10-24T12:00:00', 'Cancelada',   'Dato de prueba Proyecto 2');
 
 SET IDENTITY_INSERT dbo.Recolecciones OFF;
 
