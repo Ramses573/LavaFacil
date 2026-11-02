@@ -21,12 +21,38 @@ Solución preparada para carga masiva y acceso mediante GraphQL. El backend se d
 7. En la carpeta del proyecto GraphQL ejecutar `dotnet restore` y `dotnet run`.
 8. Abrir la dirección mostrada por la consola y agregar `/graphql` para usar Nitro.
 
+## Servidor principal para el avance
+
+Para el Proyecto 2 se utilizará una única instancia, sin mirroring, replicación ni `Failover Partner`:
+
+- Equipo principal: laptop de Ramses.
+- Servidor para conexiones remotas: `100.70.40.33,1433`.
+- Instancia local: `DESKTOP-EEOH9C5\SQLEXPRESS`.
+- Base de datos: `LavaFacil`.
+- Acceso remoto: exclusivamente mediante Tailscale.
+
+El archivo `01-Script/05_Finalizar_Laptop_Principal.ps1` fija la regla de Firewall para permitir el puerto 1433 únicamente desde la IP Tailscale autorizada de Rachel y reinicia SQL Server Express. Debe ejecutarse como administrador en la laptop principal. El script no contiene contraseñas.
+
+Las credenciales y `appsettings.Development.json` son configuraciones privadas de cada equipo y no deben publicarse en Git.
+
 ## División acordada
 
 - Rachel — BCP: Clientes, Servicios, Promociones, Pedidos y Pagos.
 - Ramses — Asistente de importación de SSMS: Empleados, Inventario, Usuarios, Recolecciones y DetallePedido.
 
 Los archivos de prueba usan identificadores desde 2001. Antes de cargarlos, confirmar que esos identificadores no existan. Las cuentas ficticias del CSV están desactivadas y sus claves son únicamente datos de laboratorio.
+
+## Orden coordinado de carga
+
+1. Ramses: Empleados e Inventario.
+2. Rachel: Clientes, Servicios y Promociones mediante BCP.
+3. Ramses: Usuarios, después de Clientes.
+4. Rachel: Pedidos, después de Clientes.
+5. Ramses: Recolecciones, después de Pedidos.
+6. Ramses: DetallePedido, después de Pedidos y Servicios.
+7. Rachel: Pagos, después de Pedidos.
+
+Cada carga debe conservar las evidencias exigidas por la rúbrica: archivo de origen, configuración del método, mapeo, resultado de tres filas y consulta de verificación de los identificadores 2001–2003.
 
 ## Estado técnico
 
