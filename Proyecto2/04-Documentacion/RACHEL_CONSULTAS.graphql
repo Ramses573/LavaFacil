@@ -1,0 +1,23 @@
+# Preparado para Nitro; no ejecutado contra SQL. Elegir una operación cada vez.
+# Servicios/Promociones públicos; las demás consultas requieren Empleado/Administrador.
+query RachelGenerales {
+  clientes { idCliente cedula nombre apellidos activo }
+  servicios { idServicio nombreServicio precioBase precioAdicional activo }
+  promociones { idPromocion idServicio nombrePromocion porcentajeDescuento activa }
+  pedidos { idPedido idCliente estado total }
+  pagos { idPago idPedido monto metodoPago estadoPago referencia }
+}
+
+# Variables: { "id": 2001 }; repetir con 2002 y 2003.
+query RachelPorId($id: Int!) {
+  clientePorId(idCliente: $id) { idCliente cedula nombre apellidos }
+  servicioPorId(idServicio: $id) { idServicio nombreServicio precioBase }
+  promocionPorId(idPromocion: $id) { idPromocion idServicio nombrePromocion }
+  pedidoPorId(idPedido: $id) { idPedido idCliente estado total }
+  pagoPorId(idPago: $id) { idPago idPedido monto metodoPago estadoPago }
+}
+
+query RachelPublicas {
+  servicios { idServicio nombreServicio precioBase }
+  promociones { idPromocion nombrePromocion porcentajeDescuento }
+}
