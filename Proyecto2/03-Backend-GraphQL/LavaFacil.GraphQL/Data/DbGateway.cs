@@ -5,7 +5,7 @@ using Microsoft.Data.SqlClient;
 
 namespace LavaFacil.GraphQL.Data;
 
-// Infrastructure evita la regla global **/Data/ sin cambiar archivos existentes.
+// Gateway único: conserva la interfaz de Ramsés y los controles por rol de Rachel.
 public sealed class DbGateway(IConfiguration configuration, RequestIdentity identity)
 {
     private SqlConnection Connection(bool login, bool publicRead)
@@ -30,7 +30,7 @@ public sealed class DbGateway(IConfiguration configuration, RequestIdentity iden
     }
 
     private static SqlCommand Command(SqlConnection connection, string procedure,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?>? parameters)
     {
         // Los nombres proceden de los resolvers, nunca de argumentos GraphQL.
         if (procedure.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '_'))
@@ -40,13 +40,14 @@ public sealed class DbGateway(IConfiguration configuration, RequestIdentity iden
             CommandType = CommandType.StoredProcedure,
             CommandTimeout = 30
         };
-        foreach (var (name, value) in parameters)
-            command.Parameters.AddWithValue("@" + name, value ?? DBNull.Value);
+        if (parameters is not null)
+            foreach (var (name, value) in parameters)
+                command.Parameters.AddWithValue(name.StartsWith('@') ? name : "@" + name, value ?? DBNull.Value);
         return command;
     }
 
     public async Task<List<T>> QueryAsync<T>(string procedure,
-        Dictionary<string, object?> parameters, bool login = false, bool publicRead = false) where T : new()
+        IReadOnlyDictionary<string, object?>? parameters = null, bool login = false, bool publicRead = false) where T : new()
     {
         await using var connection = Connection(login, publicRead);
         await using var command = Command(connection, procedure, parameters);
@@ -69,7 +70,7 @@ public sealed class DbGateway(IConfiguration configuration, RequestIdentity iden
         return rows;
     }
 
-    public async Task ExecuteAsync(string procedure, Dictionary<string, object?> parameters)
+    public async Task ExecuteAsync(string procedure, IReadOnlyDictionary<string, object?> parameters)
     {
         await using var connection = Connection(login: false, publicRead: false);
         await using var command = Command(connection, procedure, parameters);

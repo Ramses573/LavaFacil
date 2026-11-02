@@ -26,7 +26,7 @@ public sealed class RachelQueries
     {
         if (id <= 0) throw new GraphQLException("El identificador debe ser positivo.");
         var rows = await db.QueryAsync<T>(procedure,
-            new() { ["TipoConsulta"] = 2, [key] = id }, publicRead: publicRead);
+            new Dictionary<string, object?> { ["TipoConsulta"] = 2, [key] = id }, publicRead: publicRead);
         return rows.SingleOrDefault();
     }
 }

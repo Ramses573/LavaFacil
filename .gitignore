@@ -1,6 +1,8 @@
 **/bin/
 **/obj/
 **/Data/
+!Proyecto2/03-Backend-GraphQL/LavaFacil.GraphQL/Data/
+!Proyecto2/03-Backend-GraphQL/LavaFacil.GraphQL/Data/**
 *.user
 *.log
 

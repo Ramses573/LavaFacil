@@ -80,15 +80,47 @@ foreach (var query in new[] { "{ clientes { idCliente } }", "{ pedidos { idPedid
 using (var scope = provider.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DbGateway>();
-    try { await db.QueryAsync<Servicio>("ConsultarServicios", new(), publicRead: true); throw new Exception("Se esperaba conexión vacía"); }
+    try { await db.QueryAsync<Servicio>("ConsultarServicios", new Dictionary<string, object?>(), publicRead: true); throw new Exception("Se esperaba conexión vacía"); }
     catch (InvalidOperationException ex) { Check(ex.Message.Contains("Invitado"), "público usa Invitado y falla antes de SQL"); }
     accessor.HttpContext.Request.Headers.Authorization = "Bearer " + tokens.Create(new(99, "prueba-local", "Cliente"));
-    try { await db.QueryAsync<Servicio>("ConsultarServicios", new(), publicRead: true); throw new Exception("Se esperaba conexión vacía"); }
+    try { await db.QueryAsync<Servicio>("ConsultarServicios", new Dictionary<string, object?>(), publicRead: true); throw new Exception("Se esperaba conexión vacía"); }
     catch (InvalidOperationException ex) { Check(ex.Message.Contains("Cliente"), "público autenticado usa Cliente y falla antes de SQL"); }
-    try { await db.ExecuteAsync("EliminarPago", new() { ["IdPago"] = 2001 }); throw new Exception("Cliente autorizado indebidamente"); }
+    try { await db.ExecuteAsync("EliminarPago", new Dictionary<string, object?> { ["IdPago"] = 2001 }); throw new Exception("Cliente autorizado indebidamente"); }
     catch (GraphQLException) { Check(true, "gateway bloquea CRUD del Cliente antes de SQL"); }
     accessor.HttpContext.Request.Headers.Authorization = "Bearer " + tokens.Create(new(99, "prueba-local", "Empleado"));
-    try { await db.ExecuteAsync("EliminarPago", new() { ["IdPago"] = 2001 }); throw new Exception("Se esperaba conexión vacía"); }
+    try { await db.ExecuteAsync("EliminarPago", new Dictionary<string, object?> { ["IdPago"] = 2001 }); throw new Exception("Se esperaba conexión vacía"); }
     catch (InvalidOperationException ex) { Check(ex.Message.Contains("Empleado"), "CRUD usa Empleado y falla antes de SQL"); }
+}
+// Regresión de integración: configuración vacía, sin abrir conexiones SQL.
+Check(schema.Contains("type Inventario") && schema.Contains("activo: Boolean!"), "Inventario conserva Activo");
+Check(typeof(Inventario).GetProperty("Activo")?.PropertyType == typeof(bool), "modelo Inventario.Activo de Ramsés");
+foreach (var role in new[] { "", "Cliente", "Empleado", "Administrador", "Desconocido" })
+{
+    accessor.HttpContext.Request.Headers.Authorization = role == "" ? "" : "Bearer " + tokens.Create(new(99, "prueba-local", role));
+    using var scope = provider.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<DbGateway>();
+    var expected = role is "Empleado" or "Administrador" ? "Empleado" : role == "Cliente" ? "Cliente" : "Invitado";
+    try { await db.QueryAsync<Servicio>("ConsultarServicios", publicRead: true); throw new Exception("Se esperaba conexión vacía"); }
+    catch (InvalidOperationException ex) { Check(ex.Message.Contains(expected), "lectura pública con rol " + role); }
+    try { await db.QueryAsync<LoginRow>("usp_ValidarLogin", login: true); throw new Exception("Se esperaba conexión vacía"); }
+    catch (InvalidOperationException ex) { Check(ex.Message.Contains("Invitado"), "login siempre usa Invitado: " + role); }
+    try { await db.QueryAsync<Cliente>("ConsultarClientes"); throw new Exception("Se esperaba bloqueo antes de SQL"); }
+    catch (GraphQLException) when (role is not ("Empleado" or "Administrador")) { Check(true, "lectura interna bloqueada: " + role); }
+    catch (InvalidOperationException ex) when (role is "Empleado" or "Administrador") { Check(ex.Message.Contains("Empleado"), "lectura interna de personal: " + role); }
+    try { await db.ExecuteAsync("EliminarPago", new Dictionary<string, object?>()); throw new Exception("Se esperaba bloqueo antes de SQL"); }
+    catch (GraphQLException) when (role is not ("Empleado" or "Administrador")) { Check(true, "escritura bloqueada: " + role); }
+    catch (InvalidOperationException ex) when (role is "Empleado" or "Administrador") { Check(ex.Message.Contains("Empleado"), "escritura de personal: " + role); }
+}
+// Inspeccionar el comando sin abrir su conexión: parámetros opcionales y prefijo @.
+var commandFactory = typeof(DbGateway).GetMethod("Command", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+using (var connection = new Microsoft.Data.SqlClient.SqlConnection())
+{
+    using var command = (Microsoft.Data.SqlClient.SqlCommand)commandFactory.Invoke(null, new object?[] { connection, "ConsultarServicios", new Dictionary<string, object?> { ["@IdServicio"] = 2001, ["TipoConsulta"] = null } })!;
+    Check(command.CommandType == System.Data.CommandType.StoredProcedure && command.CommandText == "dbo.ConsultarServicios", "comando parametrizado en dbo");
+    Check(command.Parameters.Contains("@IdServicio") && command.Parameters["@TipoConsulta"].Value == DBNull.Value, "prefijo @ único y NULL SQL");
+    using var empty = (Microsoft.Data.SqlClient.SqlCommand)commandFactory.Invoke(null, new object?[] { connection, "ConsultarServicios", null })!;
+    Check(empty.Parameters.Count == 0, "parámetros opcionales de Ramsés");
+    try { commandFactory.Invoke(null, new object?[] { connection, "ConsultarServicios;DROP", null }); throw new Exception("Nombre inseguro aceptado"); }
+    catch (System.Reflection.TargetInvocationException ex) when (ex.InnerException is ArgumentException) { Check(true, "nombre de procedimiento inválido rechazado"); }
 }
 Console.WriteLine($"{passed} comprobaciones locales correctas. Sin conexión SQL, BCP ni servidor HTTP.");
