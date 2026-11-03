@@ -11,7 +11,8 @@ builder.Services.AddDataProtection()
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<RequestIdentity>();
 builder.Services.AddScoped<DbGateway>();
-builder.Services.AddGraphQLServer().AddQueryType<Query>().AddMutationType<Mutation>();
+builder.Services.AddGraphQLServer().AddQueryType<Query>().AddMutationType<Mutation>()
+    .AddTypeExtension<RachelQueries>();
 
 var app = builder.Build();
 app.UseHttpsRedirection();

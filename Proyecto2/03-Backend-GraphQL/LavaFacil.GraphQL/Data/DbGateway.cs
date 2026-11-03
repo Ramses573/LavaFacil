@@ -1,57 +1,80 @@
-using Microsoft.Data.SqlClient;
 using System.Data;
-using System.Reflection;
+using System.Globalization;
 using LavaFacil.GraphQL.Security;
+using Microsoft.Data.SqlClient;
 
 namespace LavaFacil.GraphQL.Data;
 
+// Gateway único: conserva la interfaz de Ramsés y los controles por rol de Rachel.
 public sealed class DbGateway(IConfiguration configuration, RequestIdentity identity)
 {
-    private string ConnectionFor(bool login = false, bool publicRead = false)
+    private SqlConnection Connection(bool login, bool publicRead)
     {
-        var key = login || publicRead ? "Invitado" : identity.Current?.Rol == "Cliente" ? "Cliente" : "Empleado";
-        var connection = configuration.GetConnectionString(key);
-        if (string.IsNullOrWhiteSpace(connection)) throw new GraphQLException($"Falta configurar ConnectionStrings:{key}.");
-        return connection;
+        var role = "Invitado";
+        if (!login && publicRead)
+            role = identity.Current?.Rol switch
+            {
+                "Cliente" => "Cliente",
+                "Empleado" or "Administrador" => "Empleado",
+                _ => "Invitado"
+            };
+        if (!login && !publicRead)
+        {
+            identity.RequireStaff();
+            role = "Empleado";
+        }
+        var value = configuration.GetConnectionString(role);
+        if (string.IsNullOrWhiteSpace(value))
+            throw new InvalidOperationException($"Falta configurar la conexión {role} localmente.");
+        return new SqlConnection(value);
     }
 
-    public async Task<List<T>> QueryAsync<T>(string procedure, IReadOnlyDictionary<string, object?>? parameters = null, bool login = false, bool publicRead = false) where T : new()
+    private static SqlCommand Command(SqlConnection connection, string procedure,
+        IReadOnlyDictionary<string, object?>? parameters)
     {
-        await using var connection = new SqlConnection(ConnectionFor(login, publicRead));
-        await using var command = BuildCommand(connection, procedure, parameters);
+        // Los nombres proceden de los resolvers, nunca de argumentos GraphQL.
+        if (procedure.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '_'))
+            throw new ArgumentException("Nombre de procedimiento inválido.", nameof(procedure));
+        var command = new SqlCommand("dbo." + procedure, connection)
+        {
+            CommandType = CommandType.StoredProcedure,
+            CommandTimeout = 30
+        };
+        if (parameters is not null)
+            foreach (var (name, value) in parameters)
+                command.Parameters.AddWithValue(name.StartsWith('@') ? name : "@" + name, value ?? DBNull.Value);
+        return command;
+    }
+
+    public async Task<List<T>> QueryAsync<T>(string procedure,
+        IReadOnlyDictionary<string, object?>? parameters = null, bool login = false, bool publicRead = false) where T : new()
+    {
+        await using var connection = Connection(login, publicRead);
+        await using var command = Command(connection, procedure, parameters);
         await connection.OpenAsync();
         await using var reader = await command.ExecuteReaderAsync();
-        var result = new List<T>();
-        var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite)
+        var properties = typeof(T).GetProperties().Where(p => p.CanWrite)
             .ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+        var rows = new List<T>();
         while (await reader.ReadAsync())
         {
-            var item = new T();
+            var row = new T();
             for (var i = 0; i < reader.FieldCount; i++)
             {
-                if (!properties.TryGetValue(reader.GetName(i), out var property) || await reader.IsDBNullAsync(i)) continue;
-                var target = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
-                property.SetValue(item, Convert.ChangeType(reader.GetValue(i), target));
+                if (!properties.TryGetValue(reader.GetName(i), out var property) || reader.IsDBNull(i)) continue;
+                var type = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+                property.SetValue(row, Convert.ChangeType(reader.GetValue(i), type, CultureInfo.InvariantCulture));
             }
-            result.Add(item);
+            rows.Add(row);
         }
-        return result;
+        return rows;
     }
 
     public async Task ExecuteAsync(string procedure, IReadOnlyDictionary<string, object?> parameters)
     {
-        await using var connection = new SqlConnection(ConnectionFor());
-        await using var command = BuildCommand(connection, procedure, parameters);
+        await using var connection = Connection(login: false, publicRead: false);
+        await using var command = Command(connection, procedure, parameters);
         await connection.OpenAsync();
         await command.ExecuteNonQueryAsync();
-    }
-
-    private static SqlCommand BuildCommand(SqlConnection connection, string procedure, IReadOnlyDictionary<string, object?>? parameters)
-    {
-        var command = new SqlCommand(procedure, connection) { CommandType = CommandType.StoredProcedure, CommandTimeout = 30 };
-        if (parameters is not null)
-            foreach (var (name, value) in parameters)
-                command.Parameters.AddWithValue(name.StartsWith('@') ? name : $"@{name}", value ?? DBNull.Value);
-        return command;
     }
 }
