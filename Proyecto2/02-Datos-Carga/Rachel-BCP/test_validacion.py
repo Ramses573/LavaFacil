@@ -27,11 +27,9 @@ class ValidationTests(unittest.TestCase):
         path = self.root / '02-Datos-Carga/Rachel-BCP' / file
         path.write_text(path.read_text(encoding='utf-8').replace(old, new), encoding='utf-8')
 
-    def test_rachel_ok_global_recolecciones_pendiente(self):
+    def test_todos_los_csv_son_compatibles(self):
         self.assertEqual(self.errors(), [])
-        issues = self.errors('todos')
-        self.assertEqual(len(issues), 2)
-        self.assertTrue(all(e.startswith('Recolecciones') for e in issues))
+        self.assertEqual(self.errors('todos'), [])
 
     def test_metodo_no_permitido(self):
         self.replace('10_Pagos.csv', ';SINPE Movil;', ';Tarjeta;')
