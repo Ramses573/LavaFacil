@@ -21,3 +21,20 @@
 !.env.example
 secrets.json
 appsettings.*.local.json
+
+# Archivos locales de Word y material temporal de generación/revisión
+~$*.docx
+**/_render_*/
+**/_render*/
+**/_manual_*_work/
+**/_manual*_work/
+**/__pycache__/
+Proyecto2/04-Documentacion/Manual_Proyecto2_LavaFacil_CORREGIDO.*
+Proyecto2/04-Documentacion/Manual_Proyecto2_LavaFacil_Final.*
+Proyecto2/04-Documentacion/Manual_Proyecto2_LavaFacil.docx
+Proyecto2/04-Documentacion/Manual_Proyecto2_LavaFacil.pdf
+
+# Documentos históricos de coordinación que no forman parte de la entrega
+Proyecto2/04-Documentacion/INTEGRACION_LOCAL_PROYECTO2.md
+Proyecto2/04-Documentacion/MATRIZ_RACHEL.md
+Proyecto2/04-Documentacion/REVISION_RACHEL.md

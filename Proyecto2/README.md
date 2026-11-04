@@ -4,7 +4,7 @@ Solución preparada para carga masiva y acceso mediante GraphQL. El backend se d
 
 ## Contenido
 
-- `01-Script`: estructura, datos base, procedimientos, triggers, seguridad por roles y verificación.
+- `01-Script`: script único de entrega, estructura, datos, procedimientos, triggers, seguridad por roles y verificación.
 - `02-Datos-Carga`: diez archivos CSV con tres registros ficticios por tabla.
 - `03-Backend-GraphQL`: API GraphQL con consulta y CRUD de las diez tablas.
 - `04-Documentacion`: instrucciones de instalación, carga, pruebas y plantilla de evidencias.
@@ -12,14 +12,13 @@ Solución preparada para carga masiva y acceso mediante GraphQL. El backend se d
 
 ## Orden obligatorio de preparación
 
-1. Ejecutar `01_LavaFacil_Estructura_Datos_SP_Triggers.sql` únicamente en una base nueva.
-2. Ejecutar `02_Mejoras_Aplicativo.sql`.
-3. Crear en SQL Server los tres logins privados `lava_gql_invitado`, `lava_gql_cliente` y `lava_gql_empleado`.
-4. Ejecutar `03_Seguridad_GraphQL.sql`.
-5. Cargar los CSV respetando el orden indicado en `04-Documentacion/GUIA_CARGA_MASIVA.md`.
-6. Copiar `appsettings.Development.example.json` como `appsettings.Development.json` y completar las tres cadenas sin subir ese archivo a Git.
-7. En la carpeta del proyecto GraphQL ejecutar `dotnet restore` y `dotnet run`.
-8. Abrir la dirección mostrada por la consola y agregar `/graphql` para usar Nitro.
+1. Para reconstruir toda la entrega en una base nueva, ejecutar `00_LavaFacil_Proyecto2_ENTREGA_FINAL.sql` directamente desde SSMS.
+2. Para demostrar la carga masiva en clase, utilizar los CSV y seguir el orden indicado en `04-Documentacion/GUIA_CARGA_MASIVA.md`; no sustituir esa demostración por el script final.
+3. Crear en SQL Server los tres logins privados `lava_gql_invitado`, `lava_gql_cliente` y `lava_gql_empleado`. Sus contraseñas no forman parte del repositorio.
+4. Ejecutar nuevamente `03_Seguridad_GraphQL.sql` después de crear los logins para asociarlos con los roles.
+5. Copiar `appsettings.Development.example.json` como `appsettings.Development.json` y completar las tres cadenas sin subir ese archivo a Git.
+6. En la carpeta del proyecto GraphQL ejecutar `dotnet restore` y `dotnet run`.
+7. Abrir la dirección mostrada por la consola y agregar `/graphql` para usar Nitro.
 
 ## Servidor principal para el avance
 
@@ -57,10 +56,13 @@ Cada carga debe conservar las evidencias exigidas por la rúbrica: archivo de or
 ## Estado técnico
 
 - Las diez tablas tienen sus tres registros de prueba 2001–2003 en el servidor principal.
-- La evidencia de Ramses incluye una carga real mediante el Asistente de importación de SSMS y la consulta final de sus cinco tablas.
+- La evidencia de Ramses incluye una carga real mediante el Asistente de importación de SSMS, los cinco archivos de origen y la consulta final de sus cinco tablas.
 - Los estados de `Recolecciones` se ajustaron al `CHECK`: `Programada`, `Recolectada` y `Cancelada`.
 - Los tres logins privados de GraphQL se crean únicamente en SQL Server; sus contraseñas permanecen fuera del repositorio.
 - Los roles `gql_invitado`, `gql_cliente` y `gql_empleado` fueron verificados mediante procedimientos almacenados autorizados.
-- El backend compila sin advertencias ni errores.
+- El backend fue compilado y probado con consultas y operaciones CRUD reales.
+- El manual final unificado está disponible en Word y PDF con las evidencias de BCP, SSMS y GraphQL.
+- Los archivos vigentes de entrega son `04-Documentacion/Manual_Proyecto2_LavaFacil_COMPLETO.docx` y `04-Documentacion/Manual_Proyecto2_LavaFacil_COMPLETO.pdf`.
+- El script `00_LavaFacil_Proyecto2_ENTREGA_FINAL.sql` es autónomo e integra estructura, procedimientos, datos, seguridad y verificaciones. No requiere modo SQLCMD ni rutas externas.
 
-Todavía debe regenerarse desde SSMS el script final de estructura y datos y unificarse el documento de evidencias de ambos integrantes.
+La revisión final de entregables y las observaciones de demostración se encuentran en `04-Documentacion/CUMPLIMIENTO_ENTREGA.md`.

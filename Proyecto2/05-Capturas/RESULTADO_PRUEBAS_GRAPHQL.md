@@ -21,7 +21,12 @@ Base de datos: `LavaFacil` mediante la conexión privada configurada localmente.
 
 ## Evidencia visual
 
-La captura `GraphQL_Consulta_Publica.jpg` muestra Nitro conectado al endpoint, la consulta pública, el estado HTTP 200 y datos obtenidos de SQL Server.
+- `GraphQL_Consulta_Publica.jpg`: consulta pública con respuesta HTTP 200.
+- `GraphQL/01_Login_Administrador.png`: login correcto y rol Administrador.
+- `GraphQL/02_Consultas_Protegidas_10_Tablas.png`: consulta protegida de las diez tablas.
+- `GraphQL/03_CRUD_Insertar_Servicio.png`: inserción mediante procedimiento almacenado.
+- `GraphQL/04_CRUD_Actualizar_Servicio.png`: actualización mediante procedimiento almacenado.
+- `GraphQL/05_CRUD_Eliminar_Servicio.png`: eliminación correcta y limpieza del registro temporal.
 
 ## Reproducción segura
 

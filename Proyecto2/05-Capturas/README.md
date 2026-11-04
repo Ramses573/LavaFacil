@@ -1,7 +1,7 @@
-# Capturas pendientes de ejecución real
+# Evidencias visuales del Proyecto 2
 
-- `BCP`: cinco cargas de Rachel y sus consultas de comprobación.
-- `SSMS`: cinco cargas de Ramses, mapeos y consultas de comprobación.
-- `GraphQL`: compilación, login, consultas, CRUD y prueba posterior al failover.
+- `BCP`: las evidencias originales de Rachel se integraron al manual final.
+- `SSMS`: incluye el resultado real del Asistente para Empleados, los archivos de origen y la verificación consolidada de las cinco tablas de Ramsés.
+- `GraphQL`: contiene consulta pública, login administrativo, consulta protegida de las diez tablas y CRUD de Servicios.
 
-Las imágenes se agregan después de ejecutar cada prueba. No se incluyen capturas simuladas.
+El Proyecto 2 se demuestra contra una sola instancia principal. No requiere mirroring, replicación ni una prueba de failover.

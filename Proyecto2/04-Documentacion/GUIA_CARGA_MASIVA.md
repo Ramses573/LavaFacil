@@ -1,6 +1,6 @@
 # Guía de carga masiva
 
-Todas las cargas se hacen contra el servidor que tenga el rol `PRINCIPAL`. No se cargan datos directamente en la base espejo porque permanece en estado `RESTORING` mientras el mirroring está activo.
+Todas las cargas se realizan contra la única instancia principal definida para el Proyecto 2 y sobre la base `LavaFacil`. Este avance no utiliza mirroring ni replicación.
 
 ## Orden coordinado
 
@@ -51,4 +51,4 @@ Para cada archivo de `02-Datos-Carga/Ramses-SSMS`:
 
 ## Comprobación final
 
-Ejecutar `01-Script/04_Verificacion_Proyecto2.sql`. Después comprobar que el mirror esté `SYNCHRONIZED`. Finalmente, regenerar desde SSMS el script de esquema y datos de la base ya cargada.
+Ejecutar `01-Script/04_Verificacion_Proyecto2.sql` y comprobar tres registros por tabla. El repositorio incluye `01-Script/00_LavaFacil_Proyecto2_ENTREGA_FINAL.sql`, que reconstruye estructura, procedimientos, datos y seguridad en una base nueva.

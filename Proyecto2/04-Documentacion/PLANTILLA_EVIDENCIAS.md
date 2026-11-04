@@ -27,9 +27,9 @@ Incluir: compilación correcta, Nitro abierto, login y rol devuelto, consultas d
 
 Mostrar los tres usuarios/roles de base de datos y demostrar que el rol empleado puede ejecutar CRUD mientras el invitado solamente valida login y consulta información pública. Ocultar contraseñas y tokens completos.
 
-## 6. Mirroring y Failover Partner
+## 6. Script y archivos de entrega
 
-Mostrar estado `SYNCHRONIZED`, cadenas con `Initial Catalog` y `Failover Partner` sin contraseña, y una consulta GraphQL exitosa después de una conmutación coordinada.
+Incluir el script autónomo de estructura y datos, los diez CSV originales, el código completo del backend y el manual final en Word y PDF. No publicar las cadenas privadas de conexión.
 
 ## 7. Errores y soluciones
 
