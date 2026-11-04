@@ -1,0 +1,21 @@
+Changed database context to 'LavaFacil'.
+Tabla|Filas|PrimerID|UltimoID
+-----|-----|--------|--------
+Usuarios|3|2001|2003
+Recolecciones|3|2001|2003
+DetallePedido|3|2001|2003
+IdUsuario|NombreUsuario|TipoUsuario|IdCliente|IdEmpleado|Activo
+---------|-------------|-----------|---------|----------|------
+2001|cliente_p2_01|Cliente|2001|NULL|1
+2002|empleado_p2_01|Empleado|NULL|2001|1
+2003|admin_p2_01|Administrador|NULL|2003|1
+IdRecoleccion|IdPedido|Estado
+-------------|--------|------
+2001|2001|Programada
+2002|2002|Recolectada
+2003|2003|Cancelada
+IdDetalle|IdPedido|IdServicio|Cantidad|Subtotal
+---------|--------|----------|--------|--------
+2001|2001|2001|2.00|3600.00
+2002|2002|2002|1.00|6500.00
+2003|2003|2003|2.00|6000.00

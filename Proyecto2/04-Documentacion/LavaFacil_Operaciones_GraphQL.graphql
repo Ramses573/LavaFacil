@@ -1,0 +1,188 @@
+# ==============================================================================
+# COLECCIÓN COMPLETA DE OPERACIONES PARA BANANA CAKE POP / GRAPHQL
+# Proyecto 2: LavaFácil - Bases de Datos Avanzadas
+#
+# INSTRUCCIONES:
+# 1. Pega todo este contenido en el editor de Banana Cake Pop (http://localhost:5125/graphql).
+# 2. Al tener varias operaciones con nombre, el botón de Play (▶) te mostrará un menú
+#    desplegable para elegir cuál operación ejecutar con solo un clic.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. AUTENTICACIÓN Y ROLES
+# ------------------------------------------------------------------------------
+
+# Login como Administrador (Devuelve Token y Rol Administrador)
+mutation LoginAdministrador {
+  login(usuario: "admin_p2_01", clave: "DemoTemporal2026!3") {
+    exito
+    mensaje
+    rol
+    idUsuario
+    token
+  }
+}
+
+# Login como Cliente (Devuelve Token y Rol Cliente)
+mutation LoginCliente {
+  login(usuario: "cliente_p2_01", clave: "DemoTemporal2026!1") {
+    exito
+    mensaje
+    rol
+    idUsuario
+    token
+  }
+}
+
+# Login como Empleado (Devuelve Token y Rol Empleado)
+mutation LoginEmpleado {
+  login(usuario: "empleado_p2_01", clave: "DemoTemporal2026!2") {
+    exito
+    mensaje
+    rol
+    idUsuario
+    token
+  }
+}
+
+# Login con la cuenta de Ramses
+mutation LoginRamses($usuario: String!, $clave: String!) {
+  login(usuario: $usuario, clave: $clave) {
+    exito
+    mensaje
+    rol
+    token
+  }
+}
+
+# ------------------------------------------------------------------------------
+# 2. CONSULTAS PÚBLICAS (Rol Invitado - No requieren token)
+# ------------------------------------------------------------------------------
+
+# Estado del API
+query EstadoAPI {
+  estado
+}
+
+# Catálogo público de Servicios
+query CatalogoServiciosPublico {
+  servicios {
+    idServicio
+    nombreServicio
+    tipoCobro
+    precioBase
+    activo
+  }
+}
+
+# Catálogo público de Promociones
+query PromocionesPublico {
+  promociones {
+    idPromocion
+    nombrePromocion
+    porcentajeDescuento
+    fechaInicio
+    fechaFin
+    activa
+  }
+}
+
+# ------------------------------------------------------------------------------
+# 3. CONSULTAS PROTEGIDAS (Requieren Token en Header: Authorization: Bearer <TOKEN>)
+# ------------------------------------------------------------------------------
+
+# Consulta completa de las 10 tablas en una sola petición
+query ConsultarLas10Tablas {
+  clientes { idCliente cedula nombre apellidos activo }
+  empleados { idEmpleado cedula nombre cargo activo }
+  usuarios { idUsuario nombreUsuario tipoUsuario activo }
+  servicios { idServicio nombreServicio precioBase activo }
+  pedidos { idPedido idCliente estado total }
+  detallesPedido { idDetalle idPedido idServicio cantidad subtotal }
+  pagos { idPago idPedido monto metodoPago estadoPago }
+  recolecciones { idRecoleccion idPedido direccion estado }
+  promociones { idPromocion idServicio nombrePromocion porcentajeDescuento activa }
+  inventario { idInventario nombreProducto cantidad unidadMedida cantidadMinima }
+}
+
+# Consultar solo Clientes
+query ListarClientes {
+  clientes {
+    idCliente
+    cedula
+    nombre
+    apellidos
+    telefono
+    email
+    activo
+  }
+}
+
+# Consultar solo Empleados
+query ListarEmpleados {
+  empleados {
+    idEmpleado
+    cedula
+    nombre
+    apellidos
+    cargo
+    fechaIngreso
+    activo
+  }
+}
+
+# Consultar solo Inventario
+query ListarInventario {
+  inventario {
+    idInventario
+    nombreProducto
+    descripcion
+    cantidad
+    unidadMedida
+    cantidadMinima
+  }
+}
+
+# ------------------------------------------------------------------------------
+# 4. OPERACIONES CRUD (Invocan Procedimientos Almacenados en SQL Server)
+# Requieren Token en Header: Authorization: Bearer <TOKEN>
+# ------------------------------------------------------------------------------
+
+# Insertar un nuevo servicio (Llama a dbo.InsertarServicio)
+mutation InsertarServicioPrueba {
+  insertarServicio(
+    nombreServicio: "Lavado Express Prueba"
+    descripcion: "Prueba desde Banana Cake Pop"
+    tipoCobro: "Unidad"
+    precioBase: 3500
+    cantidadIncluida: 1
+    precioAdicional: 0
+  ) {
+    exito
+    mensaje
+  }
+}
+
+# Actualizar un servicio existente (Llama a dbo.ActualizarServicio)
+mutation ActualizarServicioPrueba($idServicio: Int!) {
+  actualizarServicio(
+    idServicio: $idServicio
+    nombreServicio: "Lavado en Seco Premium Modificado"
+    descripcion: "Actualizado via SP desde GraphQL"
+    tipoCobro: "Unidad"
+    precioBase: 4500
+    cantidadIncluida: 1
+    precioAdicional: 500
+  ) {
+    exito
+    mensaje
+  }
+}
+
+# Eliminar un servicio (Llama a dbo.EliminarServicio)
+mutation EliminarServicioPrueba($idServicio: Int!) {
+  eliminarServicio(idServicio: $idServicio) {
+    exito
+    mensaje
+  }
+}

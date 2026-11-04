@@ -39,7 +39,7 @@ Las credenciales y `appsettings.Development.json` son configuraciones privadas d
 - Rachel — BCP: Clientes, Servicios, Promociones, Pedidos y Pagos.
 - Ramses — Asistente de importación de SSMS: Empleados, Inventario, Usuarios, Recolecciones y DetallePedido.
 
-Los archivos de prueba usan identificadores desde 2001. Antes de cargarlos, confirmar que esos identificadores no existan. Las cuentas ficticias del CSV están desactivadas y sus claves son únicamente datos de laboratorio.
+Los archivos de prueba usan identificadores desde 2001. Antes de cargarlos, confirmar que esos identificadores no existan. Las cuentas ficticias del CSV actual están activas para las pruebas y sus claves son únicamente datos de laboratorio.
 
 ## Orden coordinado de carga
 
@@ -66,3 +66,9 @@ Cada carga debe conservar las evidencias exigidas por la rúbrica: archivo de or
 - El script `00_LavaFacil_Proyecto2_ENTREGA_FINAL.sql` es autónomo e integra estructura, procedimientos, datos, seguridad y verificaciones. No requiere modo SQLCMD ni rutas externas.
 
 La revisión final de entregables y las observaciones de demostración se encuentran en `04-Documentacion/CUMPLIMIENTO_ENTREGA.md`.
+
+## Evidencias corregidas el 4 de noviembre
+
+Las imágenes reconstruidas se retiraron. Las capturas directas vigentes están en `05-Capturas/Reales_20261104`, con sus salidas originales de BCP y SQLCMD. El manual identifica las verificaciones de dbo y las nuevas cargas auxiliares por separado. La auditoría detallada está en `04-Documentacion/AUDITORIA_CAPTURAS_REALES.md`.
+
+Se repitió Inventario con el asistente y Usuarios, Recolecciones y DetallePedido con BCP en tablas auxiliares, para conservar los registros existentes de dbo. La repetición del asistente tiene incidencias de identidad y codificación descritas en el manual. La prueba adicional de BULK INSERT se ejecutó en una tabla temporal: `01-Script/08_Demostracion_BULK_INSERT_Segura.sql`. El enunciado exige SSMS y BCP; BULK INSERT es evidencia adicional, no un reemplazo de esos métodos.

@@ -1,4 +1,4 @@
-﻿/*
+/*
     LavaFácil - Proyecto 2 - Script único de entrega
     Ejecutar directamente desde SQL Server Management Studio.
 
@@ -2333,11 +2333,11 @@ GO
 PRINT N'Cargando datos del Proyecto 2 en dbo.Usuarios';
 SET IDENTITY_INSERT dbo.[Usuarios] ON;
 IF NOT EXISTS (SELECT 1 FROM dbo.[Usuarios] WHERE [IdUsuario] = 2001)
-    INSERT dbo.[Usuarios] ([IdUsuario], [NombreUsuario], [Clave], [TipoUsuario], [IdCliente], [IdEmpleado], [Activo], [FechaCreacion]) VALUES (2001, N'cliente_p2_01', N'DemoTemporal2026!1', N'Cliente', 2001, NULL, 0, N'2026-10-24 10:10:00');
+    INSERT dbo.[Usuarios] ([IdUsuario], [NombreUsuario], [Clave], [TipoUsuario], [IdCliente], [IdEmpleado], [Activo], [FechaCreacion]) VALUES (2001, N'cliente_p2_01', N'DemoTemporal2026!1', N'Cliente', 2001, NULL, 1, N'2026-10-24 10:10:00');
 IF NOT EXISTS (SELECT 1 FROM dbo.[Usuarios] WHERE [IdUsuario] = 2002)
-    INSERT dbo.[Usuarios] ([IdUsuario], [NombreUsuario], [Clave], [TipoUsuario], [IdCliente], [IdEmpleado], [Activo], [FechaCreacion]) VALUES (2002, N'empleado_p2_01', N'DemoTemporal2026!2', N'Empleado', NULL, 2001, 0, N'2026-10-24 10:10:00');
+    INSERT dbo.[Usuarios] ([IdUsuario], [NombreUsuario], [Clave], [TipoUsuario], [IdCliente], [IdEmpleado], [Activo], [FechaCreacion]) VALUES (2002, N'empleado_p2_01', N'DemoTemporal2026!2', N'Empleado', NULL, 2001, 1, N'2026-10-24 10:10:00');
 IF NOT EXISTS (SELECT 1 FROM dbo.[Usuarios] WHERE [IdUsuario] = 2003)
-    INSERT dbo.[Usuarios] ([IdUsuario], [NombreUsuario], [Clave], [TipoUsuario], [IdCliente], [IdEmpleado], [Activo], [FechaCreacion]) VALUES (2003, N'admin_p2_01', N'DemoTemporal2026!3', N'Administrador', NULL, 2003, 0, N'2026-10-24 10:10:00');
+    INSERT dbo.[Usuarios] ([IdUsuario], [NombreUsuario], [Clave], [TipoUsuario], [IdCliente], [IdEmpleado], [Activo], [FechaCreacion]) VALUES (2003, N'admin_p2_01', N'DemoTemporal2026!3', N'Administrador', NULL, 2003, 1, N'2026-10-24 10:10:00');
 SET IDENTITY_INSERT dbo.[Usuarios] OFF;
 GO
 

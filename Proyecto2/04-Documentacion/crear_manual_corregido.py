@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 from PIL import Image
@@ -78,6 +79,10 @@ def add_page_field(paragraph) -> None:
 
 
 def add_picture(doc: Document, image_path: Path, caption: str) -> None:
+    number = len(doc.inline_shapes) + 1
+    caption = re.sub(r'^Figura \d+\.', f'Figura {number}.', caption)
+    if doc.paragraphs and doc.paragraphs[-1].style.name != 'Caption':
+        doc.paragraphs[-1].paragraph_format.keep_with_next = True
     with Image.open(image_path) as image:
         w, h = image.size
     max_w, max_h = 6.35, 7.25
@@ -133,6 +138,9 @@ def configure_styles(doc: Document) -> None:
         style.paragraph_format.space_before = Pt(before)
         style.paragraph_format.space_after = Pt(after)
         style.paragraph_format.keep_with_next = True
+        borders = style.element.xpath('./w:pPr/w:pBdr')
+        for border in borders:
+            border.getparent().remove(border)
     cap = doc.styles["Caption"]
     cap.font.name = "Aptos"
     cap.font.size = Pt(9)
@@ -184,10 +192,10 @@ def add_index(doc: Document) -> None:
         (3, "Servicios", "Rachel — BCP"),
         (4, "Promociones", "Rachel — BCP"),
         (5, "Inventario", "Ramsés — Asistente de SSMS"),
-        (6, "Usuarios", "Ramsés — Asistente de SSMS"),
+        (6, "Usuarios", "Ramsés — BCP en repetición verificada"),
         (7, "Pedidos", "Rachel — BCP"),
-        (8, "Recolecciones", "Ramsés — Asistente de SSMS"),
-        (9, "DetallePedido", "Ramsés — Asistente de SSMS"),
+        (8, "Recolecciones", "Ramsés — BCP en repetición verificada"),
+        (9, "DetallePedido", "Ramsés — BCP en repetición verificada"),
         (10, "Pagos", "Rachel — BCP"),
     )
     for row_index, entry in enumerate(entries, 1):
@@ -260,13 +268,11 @@ def add_rachel_evidence(doc: Document, evidence_path: Path, work_dir: Path) -> N
 def add_ramses_evidence(doc: Document, evidence_dir: Path) -> None:
     doc.add_page_break()
     doc.add_heading("Evidencias del Asistente de importación de SSMS", level=1)
-    doc.add_paragraph(
-        "Ramsés trabajó con los CSV 02_Empleados.csv, 05_Inventario.csv, 06_Usuarios.csv, 08_Recolecciones.csv y 09_DetallePedido.csv. El Asistente de SSMS se configuró con delimitador punto y coma, codificación UTF-8, primera fila con encabezados e inserción de identidad habilitada."
-    )
+    doc.add_paragraph("Las siguientes pantallas proceden del programa real. Se conserva la evidencia original del asistente de Empleados y se agregan capturas directas de los CSV y consultas realizadas el 4 de noviembre de 2026 en la instancia local DESKTOP-EEOH9C5\\SQLEXPRESS. Las consultas documentan el estado de los datos; no reconstruyen el recorrido histórico de importación.")
     doc.add_heading("Empleados", level=2)
     doc.add_paragraph("Archivo de origen: 02_Empleados.csv. Método: Asistente de importación de SSMS.")
     add_picture(doc, evidence_dir / "01_Empleados_3_filas_transferidas.png", "Figura 25. Resultado exitoso del asistente: tres filas transferidas a Empleados.")
-    individual_dir = evidence_dir / "Tablas-Individuales"
+    real_dir = evidence_dir.parents[1] / "05-Capturas" / "Reales_20261104"
     figure = 26
     for heading, filename in (
         ("Inventario", "05_Inventario.csv"),
@@ -275,23 +281,48 @@ def add_ramses_evidence(doc: Document, evidence_dir: Path) -> None:
         ("DetallePedido", "09_DetallePedido.csv"),
     ):
         doc.add_heading(heading, level=2)
-        doc.add_paragraph(
-            f"Archivo de origen: {filename}. Método: Asistente de importación de SSMS. "
-            "La primera imagen documenta el contenido cargado y la segunda resalta el resultado real de la consulta de verificación en SSMS."
-        )
+        doc.add_paragraph(f"Archivo de origen: {filename}. El archivo original se abrió en Bloc de notas y la consulta se ejecutó en SSMS contra dbo.{heading}. Ambos resultados se muestran sin reconstrucciones ni rótulos agregados a la imagen.").paragraph_format.keep_with_next = True
         add_picture(
             doc,
-            individual_dir / f"{heading}_01_Archivo_Origen.png",
+            real_dir / f"{heading}_Archivo_Original_Real.jpg",
             f"Figura {figure}. Archivo {filename} con tres registros preparados para dbo.{heading}.",
         )
         figure += 1
         add_picture(
             doc,
-            individual_dir / f"{heading}_02_Verificacion_SSMS.png",
+            real_dir / f"{heading}_02_Verificacion_SSMS_Real.jpg",
             f"Figura {figure}. Resultado de SSMS: dbo.{heading} contiene tres registros de la carga.",
         )
         figure += 1
-    add_picture(doc, evidence_dir / "02_Verificacion_5_tablas.png", f"Figura {figure}. Consulta conjunta final de las cinco tablas asignadas a Ramsés.")
+        if heading in ("Usuarios", "Recolecciones", "DetallePedido"):
+            doc.add_paragraph("Se repitió una carga real con BCP en la tabla auxiliar vacía EvidenciaSSMS20261104." + heading + ". La salida original del proceso se guardó mediante redirección de stdout y se abrió en Bloc de notas para la captura. No es una captura de la consola ni un resultado dibujado. La tabla dbo se conservó y se verificó por separado.")
+            doc.add_paragraph(f'bcp LavaFacil.EvidenciaSSMS20261104.{heading} in "C:\\Users\\jm076\\Desktop\\LavaFacil\\Proyecto2\\02-Datos-Carga\\Ramses-SSMS\\{filename}" -S .\\SQLEXPRESS -T -c -C 65001 -t ";" -r 0x0a -F 2 -E -k -b 1000 -m 1')
+            add_picture(doc, real_dir / f"{heading}_BCP_Salida_Real.jpg", f"Figura 1. Salida original de BCP de {heading}, con tres filas copiadas, abierta en Bloc de notas.")
+    add_picture(doc, real_dir / "Verificacion_5_Tablas_Real.jpg", f"Figura {figure}. Consulta conjunta real de las cinco tablas asignadas a Ramsés.")
+    add_picture(doc, real_dir / "BCP_Verificacion_SQLCMD_Real.jpg", "Figura 1. Salida original de SQLCMD verificando los IDs 2001 a 2003 y valores NULL de las tres tablas auxiliares cargadas con BCP.")
+    doc.add_heading("Repetición del asistente con Inventario", level=2)
+    doc.add_paragraph("Se repitió la importación en EvidenciaSSMS20261104.Inventario, una tabla auxiliar, para conservar los registros de dbo. El asistente transfirió tres filas. Las columnas Cantidad y CantidadMinima se recibieron como texto después del error de conversión y se validaron mediante TRY_CONVERT. El proveedor generó IDs auxiliares 1 a 3 y presentó una diferencia de codificación en un acento; esta repetición no se presenta como una recarga idéntica de dbo.Inventario.")
+    for filename, text in (
+        ("Inventario_01_Origen_UTF8_Real.jpg", "Origen real con UTF-8 y encabezados seleccionados."),
+        ("Inventario_02_Columnas_Real.jpg", "Vista previa real y delimitador punto y coma."),
+        ("Inventario_03_Mapeo_Identidad_Real.jpg", "Mapeo real hacia tabla auxiliar e inserción de identidad seleccionada."),
+        ("Inventario_04_Asistente_3_Filas_Real.jpg", "Resultado real del asistente con tres filas transferidas y cero errores."),
+        ("Inventario_05_Verificacion_Asistente_Real.jpg", "Verificación real de los decimales en la tabla auxiliar; se observan los IDs generados y la diferencia de codificación."),
+    ):
+        add_picture(doc, real_dir / filename, f"Figura 1. {text}")
+    doc.add_page_break()
+    doc.add_heading("Carga real mediante BULK INSERT", level=1)
+    doc.add_paragraph("Se ejecutó BULK INSERT en SSMS para importar el CSV original de Inventario hacia #InventarioBulk, tabla temporal creada con la estructura de dbo.Inventario. Esta prueba demuestra el método sin duplicar los IDs existentes en la tabla del proyecto. Se usaron FIRSTROW=2, FIELDTERMINATOR punto y coma, ROWTERMINATOR 0x0a, CODEPAGE 65001, KEEPIDENTITY y KEEPNULLS.")
+    for filename, text in (
+        ("Bulk_01_Instruccion_Real.jpg", "Instrucción BULK INSERT real preparada en SSMS."),
+        ("Bulk_02_Mensajes_Real.jpg", "Mensajes reales de ejecución de BULK INSERT."),
+        ("Bulk_03_Resultados_Real.jpg", "Consulta real de las tres filas importadas por BULK INSERT."),
+    ):
+        add_picture(doc, real_dir / filename, f"Figura 1. {text}")
+    doc.add_heading("Errores encontrados y tratamiento", level=1)
+    doc.add_paragraph("El proveedor .NET rechazó inicialmente la conexión porque la propiedad ConnectionString no estaba inicializada. Se reingresó y confirmó la cadena completa con autenticación Windows e Initial Catalog=LavaFacil. Posteriormente el asistente falló al convertir Cantidad a decimal. Se conservó el dato en columnas de texto de una tabla auxiliar y se comprobó su conversión con TRY_CONVERT. Las capturas siguientes son los errores observados, no ejemplos recreados.")
+    add_picture(doc, real_dir / "Error_ConnectionString_Asistente_Real.jpg", "Figura 1. Error real de ConnectionString del asistente.")
+    add_picture(doc, real_dir / "Error_Decimal_Asistente_Real.jpg", "Figura 1. Error real de conversión de Cantidad.")
 
 
 def add_graphql(doc: Document, capture_dir: Path) -> None:
@@ -311,8 +342,10 @@ def add_graphql(doc: Document, capture_dir: Path) -> None:
         image = capture_dir / filename
         if not image.exists():
             continue
+        if n > 35:
+            doc.add_page_break()
         doc.add_heading(heading, level=2)
-        doc.add_paragraph(description)
+        doc.add_paragraph(description).paragraph_format.keep_with_next = True
         add_picture(doc, image, f"Figura {n}. {description}")
 
 

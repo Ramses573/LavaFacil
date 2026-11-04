@@ -1,6 +1,8 @@
 # Revisión final de cumplimiento del Proyecto 2
 
-Fecha de revisión: 3 de noviembre de 2026.
+Fecha de revisión: 4 de noviembre de 2026.
+
+La auditoría vigente es `AUDITORIA_CAPTURAS_REALES.md`. Las imágenes reconstruidas se retiraron y se sustituyeron por capturas directas. Las nuevas cargas se ejecutaron en tablas auxiliares para conservar dbo; no se presentan como evidencia histórica de importación a dbo.
 
 ## Resultado general
 
@@ -37,7 +39,7 @@ El repositorio contiene los componentes técnicos solicitados: archivos de carga
 
 ## Observación para la demostración
 
-La evidencia del Asistente muestra directamente la carga exitosa de Empleados. Para Inventario, Usuarios, Recolecciones y DetallePedido el manual presenta el archivo de origen y la verificación consolidada en SSMS. Si la profesora exige una pantalla independiente del último paso del asistente para cada tabla, esas cuatro capturas deben tomarse durante la demostración; no se sustituyeron con imágenes inventadas.
+Se conserva la evidencia original del asistente de Empleados. Se agregaron capturas directas de los cuatro CSV y consultas individuales de dbo. Se repitió Inventario con el asistente y las otras tres tablas con BCP en tablas auxiliares. Las salidas BCP muestran tres filas copiadas y SQLCMD confirma IDs 2001–2003 y NULL correctos. La repetición auxiliar del asistente generó IDs 1–3 y presentó una diferencia de codificación; el manual lo indica expresamente. BULK INSERT se documenta como prueba adicional real hacia una tabla temporal. No debe afirmarse que una carga auxiliar demuestra una importación histórica a dbo.
 
 ## Orden de entrega recomendado
 

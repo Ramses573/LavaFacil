@@ -1,0 +1,441 @@
+{
+  "info": {
+    "_postman_id": "b3e4f79a-1122-48cd-92a1-lavafacilgql2",
+    "name": "LavaFacil GraphQL - Proyecto 2",
+    "description": "Colección completa para la defensa del Proyecto 2 de Bases de Datos Avanzadas (LavaFácil). Incluye Login con guardado automático de Token JWT, Consultas Públicas, Consultas Protegidas de las 10 tablas y Operaciones CRUD con Procedimientos Almacenados.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5125/graphql",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Autenticación y Roles",
+      "description": "Mutaciones de Login para validar credenciales y obtener el rol del usuario.",
+      "item": [
+        {
+          "name": "1.1 Login Administrador (Guarda Token Automático)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.login && jsonData.data.login.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.login.token);",
+                  "    pm.test('Login exitoso con rol Administrador', function () {",
+                  "        pm.expect(jsonData.data.login.exito).to.eql(true);",
+                  "        pm.expect(jsonData.data.login.rol).to.eql('Administrador');",
+                  "    });",
+                  "    console.log('Token JWT capturado y guardado automáticamente en {{token}}');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation LoginAdmin {\n  login(usuario: \"admin_p2_01\", clave: \"DemoTemporal2026!3\") {\n    exito\n    mensaje\n    rol\n    idUsuario\n    token\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Valida credenciales contra usp_ValidarLogin, confirma rol Administrador y guarda el Token en la variable de colección {{token}} automáticamente."
+          }
+        },
+        {
+          "name": "1.2 Login Cliente (Prueba Rol Cliente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation LoginCliente {\n  login(usuario: \"cliente_p2_01\", clave: \"DemoTemporal2026!1\") {\n    exito\n    mensaje\n    rol\n    idUsuario\n    token\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Demuestra la validación de un usuario con Rol Cliente."
+          }
+        },
+        {
+          "name": "1.3 Login Empleado (Prueba Rol Empleado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation LoginEmpleado {\n  login(usuario: \"empleado_p2_01\", clave: \"DemoTemporal2026!2\") {\n    exito\n    mensaje\n    rol\n    idUsuario\n    token\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Demuestra la validación de un usuario con Rol Empleado."
+          }
+        },
+        {
+          "name": "1.4 Login Cuenta Principal (Ramses Aguilar)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.login && jsonData.data.login.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.login.token);",
+                  "    pm.test('Login exitoso cuenta Ramses', function () {",
+                  "        pm.expect(jsonData.data.login.exito).to.eql(true);",
+                  "        pm.expect(jsonData.data.login.rol).to.eql('Administrador');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation LoginRamses($usuario: String!, $clave: String!) {\n  login(usuario: $usuario, clave: $clave) {\n    exito\n    mensaje\n    rol\n    token\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Login con la cuenta administradora de Ramsés."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Consultas Públicas (Rol Invitado)",
+      "description": "Consultas permitidas sin token o para rol Invitado (gql_invitado).",
+      "item": [
+        {
+          "name": "2.1 Estado del Servicio API",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query EstadoAPI {\n  estado\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "2.2 Consultar Catálogo de Servicios (Público)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query CatalogoServicios {\n  servicios {\n    idServicio\n    nombreServicio\n    tipoCobro\n    precioBase\n    activo\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "2.3 Consultar Promociones Vigentes (Público)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query PromocionesVigentes {\n  promociones {\n    idPromocion\n    nombrePromocion\n    porcentajeDescuento\n    fechaInicio\n    fechaFin\n    activa\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Consultas Protegidas (Usa Token)",
+      "description": "Consultas que requieren autenticación. Utilizan el token guardado automáticamente en {{token}}.",
+      "item": [
+        {
+          "name": "3.1 Consultar las 10 Tablas en una sola llamada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query Consultar10Tablas {\n  clientes { idCliente cedula nombre apellidos activo }\n  empleados { idEmpleado cedula nombre cargo activo }\n  usuarios { idUsuario nombreUsuario tipoUsuario activo }\n  servicios { idServicio nombreServicio precioBase activo }\n  pedidos { idPedido idCliente estado total }\n  detallesPedido { idDetalle idPedido idServicio cantidad subtotal }\n  pagos { idPago idPedido monto metodoPago estadoPago }\n  recolecciones { idRecoleccion idPedido direccion estado }\n  promociones { idPromocion idServicio nombrePromocion porcentajeDescuento activa }\n  inventario { idInventario nombreProducto cantidad unidadMedida cantidadMinima }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Demostración de consulta completa de las 10 tablas protegidas en una sola petición GraphQL."
+          }
+        },
+        {
+          "name": "3.2 Consultar Clientes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ListarClientes {\n  clientes {\n    idCliente\n    cedula\n    nombre\n    apellidos\n    telefono\n    email\n    activo\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "3.3 Consultar Empleados",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ListarEmpleados {\n  empleados {\n    idEmpleado\n    cedula\n    nombre\n    apellidos\n    cargo\n    fechaIngreso\n    activo\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "3.4 Consultar Inventario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ListarInventario {\n  inventario {\n    idInventario\n    nombreProducto\n    descripcion\n    cantidad\n    unidadMedida\n    cantidadMinima\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Operaciones CRUD (Procedimientos Almacenados)",
+      "description": "Mutaciones para insertar, modificar y eliminar datos mediante Procedimientos Almacenados en SQL Server.",
+      "item": [
+        {
+          "name": "4.1 Insertar Servicio (SP InsertarServicio)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CrearServicioPrueba {\n  insertarServicio(\n    nombreServicio: \"Lavado Express Postman\",\n    descripcion: \"Insertado desde la colección de Postman\",\n    tipoCobro: \"Unidad\",\n    precioBase: 3500,\n    cantidadIncluida: 1,\n    precioAdicional: 0\n  ) {\n    exito\n    mensaje\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Ejecuta dbo.InsertarServicio en SQL Server con rol Empleado."
+          }
+        },
+        {
+          "name": "4.2 Actualizar Servicio (SP ActualizarServicio)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation ModificarServicio($idServicio: Int!) {\n  actualizarServicio(\n    idServicio: $idServicio,\n    nombreServicio: \"Servicio temporal modificado\",\n    descripcion: \"Actualizado mediante SP desde Postman\",\n    tipoCobro: \"Unidad\",\n    precioBase: 4200,\n    cantidadIncluida: 1,\n    precioAdicional: 0\n  ) {\n    exito\n    mensaje\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Ejecuta dbo.ActualizarServicio en SQL Server."
+          }
+        },
+        {
+          "name": "4.3 Eliminar Servicio (SP EliminarServicio)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation BorrarServicio($idServicio: Int!) {\n  eliminarServicio(idServicio: $idServicio) {\n    exito\n    mensaje\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Ejecuta dbo.EliminarServicio en SQL Server."
+          }
+        }
+      ]
+    }
+  ]
+}

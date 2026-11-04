@@ -19,9 +19,9 @@ SET IDENTITY_INSERT dbo.Usuarios ON;
 INSERT INTO dbo.Usuarios
     (IdUsuario, NombreUsuario, Clave, TipoUsuario, IdCliente, IdEmpleado, Activo, FechaCreacion)
 VALUES
-    (2001, 'cliente_p2_01',  'DemoTemporal2026!1', 'Cliente',       2001, NULL, 0, '2026-10-24T10:10:00'),
-    (2002, 'empleado_p2_01', 'DemoTemporal2026!2', 'Empleado',      NULL, 2001, 0, '2026-10-24T10:10:00'),
-    (2003, 'admin_p2_01',     'DemoTemporal2026!3', 'Administrador', NULL, 2003, 0, '2026-10-24T10:10:00');
+    (2001, 'cliente_p2_01',  'DemoTemporal2026!1', 'Cliente',       2001, NULL, 1, '2026-10-24T10:10:00'),
+    (2002, 'empleado_p2_01', 'DemoTemporal2026!2', 'Empleado',      NULL, 2001, 1, '2026-10-24T10:10:00'),
+    (2003, 'admin_p2_01',     'DemoTemporal2026!3', 'Administrador', NULL, 2003, 1, '2026-10-24T10:10:00');
 
 SET IDENTITY_INSERT dbo.Usuarios OFF;
 
