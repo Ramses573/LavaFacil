@@ -33,7 +33,7 @@ foreach ($name in @('INSTALACION_GRAPHQL.md','PRUEBAS_GRAPHQL.md','AUDITORIA_CAP
     Copy-Item -LiteralPath (Join-Path $projectRoot ('04-Documentacion\' + $name)) -Destination (Join-Path $deliveryRoot '06_Instrucciones_y_pruebas')
 }
 New-Item -ItemType Directory -Path (Join-Path $deliveryRoot '06_Instrucciones_y_pruebas\Scripts_de_evidencia') -Force | Out-Null
-foreach ($name in @('08_Demostracion_BULK_INSERT_Segura.sql','09_Preparar_Evidencias_Auxiliares.sql','09_Repetir_BCP_Evidencias.ps1','10_Verificar_Repeticion_BCP.sql')) {
+foreach ($name in @('08_Demostracion_BULK_INSERT_Segura.sql','09_Preparar_Evidencias_Auxiliares.sql','09_Repetir_BCP_Evidencias.ps1','10_Verificar_Repeticion_BCP.sql','11_BCP_Terminal_Real.ps1','11_Preparar_BCP_Consola.sql','12_Verificar_BCP_Consola.ps1','12_Verificar_BCP_Consola.sql')) {
     Copy-Item -LiteralPath (Join-Path $projectRoot ('01-Script\' + $name)) -Destination (Join-Path $deliveryRoot '06_Instrucciones_y_pruebas\Scripts_de_evidencia')
 }
 Copy-Item -LiteralPath (Join-Path $repoRoot 'LEER_ENTREGA_PROYECTO_2.md') -Destination (Join-Path $deliveryRoot '00_LEER_PRIMERO.md')

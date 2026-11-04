@@ -295,11 +295,11 @@ def add_ramses_evidence(doc: Document, evidence_dir: Path) -> None:
         )
         figure += 1
         if heading in ("Usuarios", "Recolecciones", "DetallePedido"):
-            doc.add_paragraph("Se repitió una carga real con BCP en la tabla auxiliar vacía EvidenciaSSMS20261104." + heading + ". La salida original del proceso se guardó mediante redirección de stdout y se abrió en Bloc de notas para la captura. No es una captura de la consola ni un resultado dibujado. La tabla dbo se conservó y se verificó por separado.")
-            doc.add_paragraph(f'bcp LavaFacil.EvidenciaSSMS20261104.{heading} in "C:\\Users\\jm076\\Desktop\\LavaFacil\\Proyecto2\\02-Datos-Carga\\Ramses-SSMS\\{filename}" -S .\\SQLEXPRESS -T -c -C 65001 -t ";" -r 0x0a -F 2 -E -k -b 1000 -m 1')
-            add_picture(doc, real_dir / f"{heading}_BCP_Salida_Real.jpg", f"Figura 1. Salida original de BCP de {heading}, con tres filas copiadas, abierta en Bloc de notas.")
+            doc.add_paragraph("Se repitió una carga real con BCP en la tabla auxiliar vacía EvidenciaConsolaFinal." + heading + ". La captura directa de PowerShell muestra el comando invocado por el script, la salida original de bcp.exe con tres filas copiadas y el conteo mediante SQLCMD. Las tablas auxiliares permiten repetir la transferencia sin duplicar registros en dbo; no copian sus llaves foráneas ni sus triggers.")
+            doc.add_paragraph(f'bcp LavaFacil.EvidenciaConsolaFinal.{heading} in "{filename}" -S .\\SQLEXPRESS -T -c -C 65001 -t ";" -r 0x0a -F 2 -E -k')
+            add_picture(doc, real_dir / f"{heading}_BCP_Terminal_Real.png", f"Figura 1. Ejecución real de BCP para {heading} en PowerShell: tres filas copiadas y conteo SQL igual a tres.")
     add_picture(doc, real_dir / "Verificacion_5_Tablas_Real.jpg", f"Figura {figure}. Consulta conjunta real de las cinco tablas asignadas a Ramsés.")
-    add_picture(doc, real_dir / "BCP_Verificacion_SQLCMD_Real.jpg", "Figura 1. Salida original de SQLCMD verificando los IDs 2001 a 2003 y valores NULL de las tres tablas auxiliares cargadas con BCP.")
+    add_picture(doc, real_dir / "BCP_Verificacion_Terminal_Real.png", "Figura 1. Ejecución real de SQLCMD en PowerShell: tres filas por tabla, IDs 2001 a 2003 y referencias opcionales NULL en Usuarios.")
     doc.add_heading("Repetición del asistente con Inventario", level=2)
     doc.add_paragraph("Se repitió la importación en EvidenciaSSMS20261104.Inventario, una tabla auxiliar, para conservar los registros de dbo. El asistente transfirió tres filas. Las columnas Cantidad y CantidadMinima se recibieron como texto después del error de conversión y se validaron mediante TRY_CONVERT. El proveedor generó IDs auxiliares 1 a 3 y presentó una diferencia de codificación en un acento; esta repetición no se presenta como una recarga idéntica de dbo.Inventario.")
     for filename, text in (
