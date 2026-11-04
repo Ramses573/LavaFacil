@@ -1,0 +1,4 @@
+IdPago;IdPedido;FechaPago;Monto;MetodoPago;EstadoPago;Referencia
+2001;2001;2026-10-24 09:05:00;3600.00;Efectivo;Pagado;P2-BCP-001
+2002;2002;2026-10-24 09:20:00;6500.00;SINPE Movil;Pagado;P2-BCP-002
+2003;2003;2026-10-24 09:35:00;3000.00;Efectivo;Pendiente;P2-BCP-003

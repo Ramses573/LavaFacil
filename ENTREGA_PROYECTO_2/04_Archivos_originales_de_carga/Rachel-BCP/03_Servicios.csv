@@ -1,0 +1,4 @@
+IdServicio;NombreServicio;Descripcion;TipoCobro;PrecioBase;CantidadIncluida;PrecioAdicional;Activo
+2001;Lavado estándar;Lavado y secado de ropa diaria;Kilogramo;1800.00;1.00;900.00;1
+2002;Lavado de edredón;Lavado especializado de edredones;Unidad;6500.00;1.00;0.00;1
+2003;Lavado de uniformes;Tratamiento para uniformes deportivos;Uniforme;3000.00;1.00;500.00;1
