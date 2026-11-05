@@ -1,4 +1,4 @@
-# Equipo de investigación y propuestas de automatización con IA
+# Equipo de desarrollo de software
 
 Preset declarativo para OpenCode V2. Define **1 orquestador** (agente primario) y **7 especialistas** (subagentes), cada uno con su skill metodológica.
 
@@ -6,7 +6,7 @@ Preset declarativo para OpenCode V2. Define **1 orquestador** (agente primario) 
 
 | Archivo | Propósito |
 | --- | --- |
-| `opencode.jsonc` (raíz del proyecto) | Preset: agentes, roles, modelo por herencia y permisos. |
+| `opencode.jsonc` (raíz del proyecto) | Preset: agentes, roles y permisos. |
 | `.opencode/skills/<id>/SKILL.md` | Método y formato de salida de cada capa. |
 | `.opencode/README.md` | Esta guía. |
 
@@ -14,14 +14,14 @@ Preset declarativo para OpenCode V2. Define **1 orquestador** (agente primario) 
 
 | ID | Modo | Rol | Skill |
 | --- | --- | --- | --- |
-| `orquestador` | primary | Divide, coordina y valida con el usuario. No investiga ni redacta. | — |
-| `investigador-empresa` | subagent | Qué hace el negocio, presencia online y comunicación. | `investigador-empresa` |
-| `analista-sector` | subagent | Mercado, tendencias y dolores de la industria. | `analista-sector` |
-| `analista-competencia` | subagent | Competidores directos/locales y brechas. | `analista-competencia` |
-| `detector-oportunidades` | subagent | Tareas repetitivas y cuellos de botella automatizables. | `detector-oportunidades` |
-| `verificador-datos` | subagent | Contrasta hechos y cifras; aprueba antes de redactar. | `verificador-datos` |
-| `redactor-propuestas` | subagent | Documento comercial por fases. | `redactor-propuestas` |
-| `revisor-final` | subagent | Revisión desde la perspectiva del cliente. | `revisor-final` |
+| `orquestador` | primary | Analiza, descompone, coordina, verifica y entrega. No implementa. | — |
+| `arquitecto` | subagent | Diseño técnico, archivos afectados, interfaces y riesgos. | `arquitecto` |
+| `backend` | subagent | Lógica de servidor, servicios y API. | `backend` |
+| `frontend` | subagent | Interfaz, estados, accesibilidad y responsive. | `frontend` |
+| `base-datos` | subagent | Esquema, migraciones, índices y consultas. | `base-datos` |
+| `pruebas` | subagent | Pruebas y verificación de regresiones. | `pruebas` |
+| `seguridad` | subagent | Revisión de seguridad por severidad. | `seguridad` |
+| `revisor-codigo` | subagent | Revisión del diff y veredicto. | `revisor-codigo` |
 
 ## Flujo
 
@@ -29,43 +29,41 @@ Preset declarativo para OpenCode V2. Define **1 orquestador** (agente primario) 
 Solicitud
    │
    ▼
-orquestador ──► investigador-empresa ─┐
-   │        ──► analista-sector ───────┼─► detector-oportunidades
-   │        ──► analista-competencia ──┘            │
-   │                                                ▼
-   │                                       verificador-datos
-   │                                                │ (APROBADO)
-   │                                                ▼
-   │                                     validación del usuario
-   │                                                │
-   │                                                ▼
-   │                                     redactor-propuestas
-   │                                                │
-   │                                                ▼
-   └────────────────────────────────────────► revisor-final
+orquestador ──► arquitecto (plan técnico)
+   │                 │
+   │                 ▼
+   │        base-datos ──► backend / frontend
+   │                              │
+   │                              ▼
+   │                          pruebas
+   │                              │
+   │                              ▼
+   │                    seguridad + revisor-codigo
+   │                              │
+   └──────────────────────────────┴──► entrega
 ```
 
 ## Uso
 
 1. Abre una sesión en este proyecto: el agente por defecto es `orquestador`.
-2. Escribe algo como:
+2. Describe la tarea, por ejemplo:
    ```
-   Investiga la empresa <nombre> (<ciudad/país>) y prepara una propuesta
-   de automatización con IA para enviar al cliente.
+   Agrega validación al endpoint de clientes y sus pruebas.
    ```
-3. El orquestador pedirá los datos que falten, lanzará a los especialistas y
-   te pedirá validación antes de redactar.
-4. El informe se escribe en `informes/<empresa>/propuesta.md`.
+3. El orquestador revisa el repo, propone un plan, delega en los especialistas y
+   te pide aprobación si el cambio es grande.
+4. Al final entrega: archivos cambiados, cómo probar, riesgos y pendientes.
 
-Para usar otro agente manualmente: `/agent` en la TUI o menciona el subagente
-en el prompt. Para recargar cambios de configuración: `/reload`.
+Para cambiar de agente manualmente, usa el selector de agentes de la TUI.
+Para recargar cambios de configuración: `/reload`.
 
 ## Reglas de calidad
 
-- Cada dato y métrica incluye fuente y fecha.
-- Cero invención o alucinación de cifras.
-- El verificador debe aprobar los hallazgos antes de redactar.
-- El revisor final señala explícitamente toda promesa no sustentada.
+- Nada se entrega sin build/tests ejecutados.
+- El arquitecto diseña antes de implementar en tareas no triviales.
+- Seguridad y revisión de código son obligatorias antes de cerrar.
+- No se hace commit ni push sin autorización explícita.
+- Los subagentes respetan el estilo y las convenciones del repo.
 
 ## Validación
 
@@ -77,5 +75,5 @@ opencode reload          # recarga sin reiniciar
 
 ## Desactivar el preset
 
-Elimina `opencode.jsonc` o cambia `default_agent` a `build`. Los archivos de
+Elimina `opencode.jsonc` o cambia `default_agent` a `build`. Las skills de
 `.opencode/skills/` no afectan al resto del proyecto si no se cargan.
