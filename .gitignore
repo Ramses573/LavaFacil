@@ -6,6 +6,13 @@
 *.user
 *.log
 
+# Artefactos de ejecución de las pruebas (PIDs y salidas de error)
+*.pid
+*.err
+
+# Builds locales generados dentro de las carpetas de evidencias
+Pruebas/**/lavafacil-mail-build/
+
 # Credenciales, exportaciones privadas y respaldos de SQL Server
 *.dpapi*
 *.bak
@@ -16,8 +23,28 @@
 *.p12
 *.pvk
 *.key
+keys/
 .env
 .env.*
 !.env.example
 secrets.json
 appsettings.*.local.json
+
+# Archivos locales de Word y material temporal de generación/revisión
+~$*.docx
+**/_render_*/
+**/_render*/
+**/_manual_*_work/
+**/_manual*_work/
+**/__pycache__/
+Proyecto2/04-Documentacion/work_tmp/
+Proyecto2/04-Documentacion/Manual_Proyecto2_LavaFacil_CORREGIDO.*
+Proyecto2/04-Documentacion/Manual_Proyecto2_LavaFacil_Final.*
+Proyecto2/04-Documentacion/Manual_Proyecto2_LavaFacil.docx
+Proyecto2/04-Documentacion/Manual_Proyecto2_LavaFacil.pdf
+
+# Documentos históricos de coordinación que no forman parte de la entrega
+Proyecto2/04-Documentacion/INTEGRACION_LOCAL_PROYECTO2.md
+Proyecto2/04-Documentacion/MATRIZ_RACHEL.md
+Proyecto2/04-Documentacion/REVISION_RACHEL.md
+Respaldos/
