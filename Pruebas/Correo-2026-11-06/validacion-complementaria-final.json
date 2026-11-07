@@ -1,0 +1,62 @@
+﻿[
+    {
+        "prueba":  "registro para invalidacion de cookie",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "recuperacion extrae OTP solo de Codigo en cuerpo",
+        "estado":  "PASS",
+        "detalle":  "codigoExtraidoDelCuerpo=True"
+    },
+    {
+        "prueba":  "recuperacion no tiene header OTP ni OTP en Subject",
+        "estado":  "PASS",
+        "detalle":  "sinHeader=True; sinOtpSubject=True"
+    },
+    {
+        "prueba":  "reset de clave para invalidar cookie previa",
+        "estado":  "PASS",
+        "detalle":  "status=200; codigo=True"
+    },
+    {
+        "prueba":  "cookie previa invalidada en hasta 35s",
+        "estado":  "PASS",
+        "detalle":  "statusFinal=401; segundos=1"
+    },
+    {
+        "prueba":  "login con clave posterior al reset",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "CSRF rechaza POST sin token",
+        "estado":  "PASS",
+        "detalle":  "status=400; cuerpo={\"error\":\"La sesión del formulario venció. Recarga la página.\"}"
+    },
+    {
+        "prueba":  "Host no permitido",
+        "estado":  "PASS",
+        "detalle":  "status=403; cuerpo="
+    },
+    {
+        "prueba":  "GET clients como Cliente 403",
+        "estado":  "PASS",
+        "detalle":  "status=403; cuerpo={\"error\":\"La cuenta está inactiva o no tiene permiso para esta operación.\"}"
+    },
+    {
+        "prueba":  "mirroring/health no publicado 404",
+        "estado":  "PASS",
+        "detalle":  "status=404; cuerpo="
+    },
+    {
+        "prueba":  "raiz publica",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "recurso no publicado",
+        "estado":  "PASS",
+        "detalle":  "status=404"
+    }
+]

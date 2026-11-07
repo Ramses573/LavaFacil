@@ -1971,3 +1971,97 @@ END;
 GO
 ALTER TABLE [dbo].[Pagos] ENABLE TRIGGER [trg_Pagos_ValidarMonto]
 GO
+
+-- ===== Cola transaccional de correo =====
+IF OBJECT_ID(N'dbo.CorreoEnvios',N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CorreoEnvios(
+        IdEnvio BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_CorreoEnvios PRIMARY KEY,
+        Tipo VARCHAR(30) NOT NULL, ClaveUnica VARCHAR(180) NOT NULL CONSTRAINT UX_CorreoEnvios_ClaveUnica UNIQUE,
+        IdPedido INT NULL, IdPago INT NULL, Destino VARCHAR(150) NOT NULL, Asunto VARCHAR(200) NOT NULL,
+        DatosJson NVARCHAR(MAX) NOT NULL, Estado VARCHAR(20) NOT NULL CONSTRAINT DF_CorreoEnvios_Estado DEFAULT 'Pendiente',
+        Intentos INT NOT NULL CONSTRAINT DF_CorreoEnvios_Intentos DEFAULT 0,
+        ProximoIntento DATETIME2(0) NOT NULL CONSTRAINT DF_CorreoEnvios_ProximoIntento DEFAULT SYSUTCDATETIME(),
+        ProcesandoHasta DATETIME2(0) NULL, TokenLease UNIQUEIDENTIFIER NULL,
+        CreadoEn DATETIME2(0) NOT NULL CONSTRAINT DF_CorreoEnvios_CreadoEn DEFAULT SYSUTCDATETIME(),
+        EnviadoEn DATETIME2(0) NULL, UltimoError VARCHAR(1000) NULL,
+        CONSTRAINT FK_CorreoEnvios_Pedidos FOREIGN KEY(IdPedido) REFERENCES dbo.Pedidos(IdPedido),
+        CONSTRAINT FK_CorreoEnvios_Pagos FOREIGN KEY(IdPago) REFERENCES dbo.Pagos(IdPago),
+        CONSTRAINT CK_CorreoEnvios_Estado CHECK(Estado IN('Pendiente','Procesando','Enviado','Error'))
+    );
+END;
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'dbo.CorreoEnvios') AND name=N'IX_CorreoEnvios_Pendientes')
+    CREATE INDEX IX_CorreoEnvios_Pendientes ON dbo.CorreoEnvios(Estado,ProximoIntento) INCLUDE(ProcesandoHasta,Intentos);
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID(N'dbo.CorreoEnvios') AND name=N'IX_CorreoEnvios_Lease')
+    CREATE INDEX IX_CorreoEnvios_Lease ON dbo.CorreoEnvios(ProcesandoHasta) INCLUDE(Estado,ProximoIntento);
+GO
+CREATE OR ALTER PROCEDURE dbo.app_Autorizar @IdUsuario INT,@SoloPersonal BIT=0
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u LEFT JOIN dbo.Clientes c ON c.IdCliente=u.IdCliente
+                  LEFT JOIN dbo.Empleados e ON e.IdEmpleado=u.IdEmpleado
+                  WHERE u.IdUsuario=@IdUsuario AND u.Activo=1
+                    AND ((u.TipoUsuario='Cliente' AND c.Activo=1 AND @SoloPersonal=0)
+                      OR (u.TipoUsuario IN('Empleado','Administrador') AND e.Activo=1)))
+        THROW 50100,'La cuenta est? inactiva o no tiene permiso para esta operaci?n.',1;
+END;
+GO
+CREATE OR ALTER PROCEDURE dbo.app_CambiarEstadoPedido @IdUsuario INT,@IdPedido INT,@Estado VARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+    EXEC dbo.app_Autorizar @IdUsuario,1;
+    IF @Estado NOT IN ('Pendiente','Recibido','En proceso','Listo','Entregado','Cancelado')
+        THROW 50101,'Estado de pedido inv?lido.',1;
+
+    DECLARE @Anterior VARCHAR(20),@Total DECIMAL(10,2),@IdCliente INT,
+            @Nombre VARCHAR(50),@Apellidos VARCHAR(100),@Email VARCHAR(150),
+            @Clave VARCHAR(180),@Json NVARCHAR(MAX);
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        SELECT @Anterior=p.Estado,@Total=p.Total,@IdCliente=p.IdCliente,
+               @Nombre=c.Nombre,@Apellidos=c.Apellidos,@Email=NULLIF(TRIM(c.Email),'')
+        FROM dbo.Pedidos p WITH(UPDLOCK,HOLDLOCK)
+        JOIN dbo.Clientes c ON c.IdCliente=p.IdCliente
+        WHERE p.IdPedido=@IdPedido;
+        IF @Anterior IS NULL THROW 50104,'El pedido no existe.',1;
+
+        IF @Anterior=@Estado
+        BEGIN
+            COMMIT;
+            SELECT @IdPedido AS IdPedido,@Estado AS Estado;
+            RETURN;
+        END;
+        IF @Anterior IN ('Entregado','Cancelado')
+            THROW 50101,'El estado actual del pedido es terminal.',1;
+        IF NOT ((@Anterior='Pendiente' AND @Estado IN ('Recibido','Cancelado'))
+             OR (@Anterior='Recibido' AND @Estado IN ('En proceso','Cancelado'))
+             OR (@Anterior='En proceso' AND @Estado IN ('Listo','Cancelado'))
+             OR (@Anterior='Listo' AND @Estado IN ('Entregado','Cancelado')))
+            THROW 50101,'La transici?n de estado del pedido no es v?lida.',1;
+
+        UPDATE dbo.Pedidos SET Estado=@Estado WHERE IdPedido=@IdPedido;
+        IF @Email IS NOT NULL
+        BEGIN
+            SET @Clave=CONCAT('pedido:',@IdPedido,':estado:',@Anterior,':',@Estado);
+            SET @Json=(SELECT @IdPedido AS IdPedido,@Anterior AS EstadoAnterior,@Estado AS EstadoNuevo,
+                              @Total AS Total,@Nombre AS Nombre,@Apellidos AS Apellidos,@Email AS Email,
+                              JSON_QUERY((SELECT s.NombreServicio,d.Cantidad,d.Subtotal
+                                          FROM dbo.DetallePedido d JOIN dbo.Servicios s ON s.IdServicio=d.IdServicio
+                                          WHERE d.IdPedido=@IdPedido ORDER BY d.IdDetalle FOR JSON PATH)) AS Detalle
+                       FOR JSON PATH,WITHOUT_ARRAY_WRAPPER);
+            IF NOT EXISTS(SELECT 1 FROM dbo.CorreoEnvios WITH(UPDLOCK,HOLDLOCK) WHERE ClaveUnica=@Clave)
+                INSERT dbo.CorreoEnvios(Tipo,ClaveUnica,IdPedido,Destino,Asunto,DatosJson)
+                VALUES('PedidoEstado',@Clave,@IdPedido,@Email,CONCAT('Estado del pedido #',@IdPedido,': ',@Estado),@Json);
+        END;
+        COMMIT;
+        SELECT @IdPedido AS IdPedido,@Estado AS Estado;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT>0 ROLLBACK;
+        THROW;
+    END CATCH;
+END;
+GO

@@ -1,0 +1,5 @@
+CheckName       Estado
+--------------- ------
+reclaim-token-B PASS  
+Msg 50104, Level 16, State 1, Server MADRENZO, Procedure dbo.app_ResolverCorreo, Line 6
+El env?o no existe, no est? en procesamiento o el lease ya expir?.

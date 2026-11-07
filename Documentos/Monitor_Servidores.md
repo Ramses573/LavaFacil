@@ -16,7 +16,7 @@ Los clientes y empleados no reciben direcciones, nombres ni roles en la respuest
 
 Cerrar la ventana del aplicativo anterior, ejecutar `Iniciar.cmd` una sola vez y recargar el navegador. Entrar como administrador y abrir Estado de servidores. Esta función no requiere aplicar el script de las mejoras de pedidos; sí requiere la conexión guardada y permisos de lectura en SQL. Si no está configurado Failover Partner, se comprueba solo la primera instancia y se avisa que falta el compañero.
 
-No se activó la actualización pendiente de pedidos ni se modificó el Mirroring. Las pruebas reales de caída/conmutación con MADRENZO y Rachel siguen pendientes y deben coordinarse antes de apagar o cambiar roles.
+La actualización de pedidos ya está activada en `MADRENZO/LavaFacil`; este monitor no modifica el Mirroring. Las pruebas reales de caída/conmutación con MADRENZO y Rachel siguen pendientes y deben coordinarse antes de apagar o cambiar roles.
 
 ## Pruebas
 

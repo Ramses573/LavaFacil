@@ -1,0 +1,85 @@
+[
+    {
+        "name":  "IdToken",
+        "tipo":  "int",
+        "max_length":  4,
+        "scale":  0,
+        "is_nullable":  false
+    },
+    {
+        "name":  "IdUsuario",
+        "tipo":  "int",
+        "max_length":  4,
+        "scale":  0,
+        "is_nullable":  false
+    },
+    {
+        "name":  "Proposito",
+        "tipo":  "varchar",
+        "max_length":  20,
+        "scale":  0,
+        "is_nullable":  false
+    },
+    {
+        "name":  "CodigoHash",
+        "tipo":  "varbinary",
+        "max_length":  32,
+        "scale":  0,
+        "is_nullable":  false
+    },
+    {
+        "name":  "EmailDestino",
+        "tipo":  "varchar",
+        "max_length":  150,
+        "scale":  0,
+        "is_nullable":  false
+    },
+    {
+        "name":  "CreadoEn",
+        "tipo":  "datetime2",
+        "max_length":  6,
+        "scale":  0,
+        "is_nullable":  false
+    },
+    {
+        "name":  "ExpiraEn",
+        "tipo":  "datetime2",
+        "max_length":  6,
+        "scale":  0,
+        "is_nullable":  false
+    },
+    {
+        "name":  "Intentos",
+        "tipo":  "tinyint",
+        "max_length":  1,
+        "scale":  0,
+        "is_nullable":  false
+    },
+    {
+        "name":  "UsadoEn",
+        "tipo":  "datetime2",
+        "max_length":  6,
+        "scale":  0,
+        "is_nullable":  true
+    },
+    {
+        "name":  "CK_TokensCorreo_Proposito",
+        "definition":  "([Proposito]=\u0027Recuperacion\u0027 OR [Proposito]=\u0027Verificacion\u0027)"
+    },
+    {
+        "name":  "CK_TokensCorreo_Intentos",
+        "definition":  "([Intentos]\u003e=(0) AND [Intentos]\u003c=(10))"
+    },
+    {
+        "name":  "DF_TokensCorreo_CreadoEn",
+        "definition":  "(sysutcdatetime())"
+    },
+    {
+        "name":  "DF_TokensCorreo_Intentos",
+        "definition":  "((0))"
+    },
+    {
+        "name":  "FK_TokensCorreo_Usuarios",
+        "ref":  "Usuarios"
+    }
+]

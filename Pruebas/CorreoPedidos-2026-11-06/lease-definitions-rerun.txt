@@ -1,0 +1,20 @@
+                                                                                                                                                                                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE   PROCEDURE dbo.app_ReclamarCorreo @Lote INT=10
+AS
+BEGIN
+ SET NOCOUNT ON; SET XACT_ABORT ON; IF @Lote IS NULL OR @Lote NOT BETWEEN 1 AND 1000 THROW 50101,'El lote debe estar entre 1 y 1000.',1;
+ DECLARE @Ahora DATETIME2(0)=SYSUTCDATETIME(); BEG
+
+(1 rows affected)
+                                                                                                                                                                                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE   PROCEDURE dbo.app_ResolverCorreo @IdEnvio BIGINT,@TokenLease UNIQUEIDENTIFIER,@Exito BIT,@Error VARCHAR(1000)=NULL
+AS
+BEGIN
+ SET NOCOUNT ON; SET XACT_ABORT ON; DECLARE @Ahora DATETIME2(0)=SYSUTCDATETIME(); BEGIN TRY BEGIN TRANSACTION;
+   IF NO
+
+(1 rows affected)

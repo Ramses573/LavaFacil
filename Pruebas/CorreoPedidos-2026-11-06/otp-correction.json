@@ -1,0 +1,9 @@
+{
+  "prueba": "OTP recuperación/reset formato outbox actual",
+  "estado": "PASS",
+  "evidencia": "ejecución real 2026-11-06 18:54:13Z",
+  "extraccion": "Codigo: 123456 desde cuerpo MIME",
+  "headerOtp": false,
+  "codigoLongitud": 6,
+  "resetHttp": 200
+}

@@ -1,0 +1,57 @@
+﻿[
+    {
+        "Prueba":  "SP-1 dbo.app_AutoRegistroCliente existe en BD",
+        "Estado":  "PASS",
+        "Evidencia":  "filas=1"
+    },
+    {
+        "Prueba":  "SP-2 guard 50102 presente con el mismo mensaje que el script fuente",
+        "Estado":  "PASS",
+        "Evidencia":  "ocurrencias=1, coincide=True"
+    },
+    {
+        "Prueba":  "SP-3 guard usa TABLOCKX,HOLDLOCK",
+        "Estado":  "PASS",
+        "Evidencia":  "ocurrencias=1"
+    },
+    {
+        "Prueba":  "SP-4 orden: BEGIN TRANSACTION -\u003e guard 50102 -\u003e primer duplicado (dentro de la transaccion)",
+        "Estado":  "PASS",
+        "Evidencia":  "idxTx=1128, idxGuard=1457, idxPrimerDuplicado=1740"
+    },
+    {
+        "Prueba":  "SP-5 hay 4 THROW 50103 (cedula, correo, usuario activo, usuario desactivado)",
+        "Estado":  "PASS",
+        "Evidencia":  "ocurrencias=4"
+    },
+    {
+        "Prueba":  "SP-6 los 4 mensajes 50103 son IDENTICOS byte a byte y iguales al del script fuente",
+        "Estado":  "PASS",
+        "Evidencia":  "iguales=True, diferencias=ninguna"
+    },
+    {
+        "Prueba":  "SP-7 los 4 50103 usan WITH(UPDLOCK,HOLDLOCK)",
+        "Estado":  "PASS",
+        "Evidencia":  "ocurrencias UPDLOCK=4"
+    },
+    {
+        "Prueba":  "SP-8 mensajes 50103 viejos (que enumeraban el dato) eliminados",
+        "Estado":  "PASS",
+        "Evidencia":  "restantes=ninguno"
+    },
+    {
+        "Prueba":  "SP-9 los 2 mensajes 50101 siguen identicos al script fuente",
+        "Estado":  "PASS",
+        "Evidencia":  "ocurrencias BD=2 fuente=2, coinciden=True"
+    },
+    {
+        "Prueba":  "SP-10 GRANT EXECUTE a ramses_proyecto",
+        "Estado":  "PASS",
+        "Evidencia":  "grants=1"
+    },
+    {
+        "Prueba":  "SP-11 las 4 copias del script (SQL/04 + 3 replicas): bloque identico, guard 50102 y 4x50103 unico",
+        "Estado":  "PASS",
+        "Evidencia":  "copias=4, con diferencias=ninguna | SQL\\04_Mejoras_Aplicativo.sql: defs=1 len=3401 50102=1 50103=4 50101=2 | Proyecto2\\01-Script\\02_Mejoras_Aplicativo.sql: defs=1 len=3401 50102=1 50103=4 50101=2 | Proyecto2\\01-Script\\00_LavaFacil_Proyecto2_ENTREGA_FINAL.sql: defs=1 len=3401 50102=1 50103=4 50101=2 | ENTREGA_PROYECTO_2\\01_Base_de_datos\\00_LavaFacil_Proyecto2_ENTREGA_FINAL.sql: defs=1 len=3401 50102=1 50103=4 50101=2"
+    }
+]

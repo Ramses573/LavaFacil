@@ -1,7 +1,7 @@
 'use strict';
 const $ = (selector, root = document) => root.querySelector(selector);
 const app = $('#app');
-const state = { token: '', user: null, configured: false, needsAccount: false, connection: null, offline: false, clients: [], profile: null, change: '', routeVersion: 0 };
+const state = { token: '', user: null, configured: false, needsAccount: false, connection: null, offline: false, clients: [], profile: null, change: '', routeVersion: 0, mail: null, mailReady: false, correoConfigurado: false };
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch]);
 const currency = value => new Intl.NumberFormat('es-CR', { style:'currency', currency:'CRC', maximumFractionDigits:0 }).format(value);
 const isStaff = () => ['Empleado', 'Administrador'].includes(state.user?.role);
@@ -11,7 +11,9 @@ async function request(path, body) {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
     if (response.status === 401 && path !== 'login') { state.user = null; location.hash = 'login'; }
-    throw new Error(payload.error || 'No se pudo completar la operación.');
+    const error = new Error(payload.error || 'No se pudo completar la operación.');
+    error.status = response.status; error.payload = payload;
+    throw error;
   }
   return payload;
 }
@@ -84,8 +86,20 @@ function showFirstAccount() {
 }
 function showLogin() {
   app.replaceChildren($('#login-template').content.cloneNode(true)); bindPassword();
+  const cta = $('#register-cta'); if (cta) cta.hidden = !state.featuresReady;
+  const forgot = $('#forgot-link'); if (forgot) forgot.hidden = !(state.mailReady && state.correoConfigurado);
   bindForm($('#login-form'), async values => {
     const result = await request('login', values); state.user = result.user; state.profile = null;
+    recordConnection(result); await refreshToken(); location.hash = 'home';
+  });
+}
+function showSignup() {
+  app.replaceChildren($('#signup-template').content.cloneNode(true)); bindPassword();
+  bindForm($('#signup-form'), async values => {
+    if (values.password !== values.confirmPassword) throw new Error('Las contraseñas no coinciden.');
+    const result = await request('register', { identity: values.identity, name: values.name, lastName: values.lastName, phone: values.phone, email: values.email, address: values.address, username: values.username, password: values.password });
+    state.user = result.user; state.profile = null;
+    notify('Cuenta creada. Bienvenido a LavaFácil.');
     recordConnection(result); await refreshToken(); location.hash = 'home';
   });
 }
@@ -171,8 +185,9 @@ async function showProfile(version) {
 async function route() {
   const version = ++state.routeVersion; const routeName = location.hash.slice(1) || (state.user ? 'home' : 'login');
   if (!state.configured) { state.user = null; setHeader(); showSetup(); return; }
-  if (!state.user) { setHeader(); if(state.needsAccount) showFirstAccount(); else showLogin(); return; }
+  if (!state.user) { setHeader(); if(state.needsAccount) showFirstAccount(); else if(routeName==='registro'){ if(!state.featuresReady){ location.hash='login'; notify('El registro todavía no está activado en la base de datos.'); return; } showSignup(); } else if(routeName==='recuperar'){ if(!state.mailReady || !state.correoConfigurado){ location.hash='login'; notify('La recuperación por correo no está disponible en esta instalación.'); return; } showRecover(); } else showLogin(); return; }
   setHeader();
+  if (state.user && state.mailReady && window.ensureMailStatus) ensureMailStatus();
   if (!state.featuresReady && ['orders','new-order','client-account'].includes(routeName)) { location.hash='home'; notify('Las nuevas funciones están pendientes de activar en la base de datos.'); return; }
   if (state.featuresReady && !state.preferences) {
     try { const [profile,prefs] = await Promise.all([request('profile'),request('preferences')]); if(version!==state.routeVersion)return;state.profile=profile.rows[0];state.preferences=prefs.rows[0];setHeader(); }
@@ -184,19 +199,20 @@ async function route() {
     case 'orders': await showOrders(version); break;
     case 'new-order': await showNewOrder(version); break;
     case 'client-account': if(isAdmin()) await showClientAccount(version); else { location.hash='home'; notify('Solo administradores pueden crear cuentas.'); } break;
+    case 'verificar': if (!state.mailReady) { location.hash = 'home'; notify('La verificación por correo no está disponible en esta instalación.'); } else showVerify(); break;
     case 'clients': await showClients(version); break;
     case 'register': showRegister(); break;
     case 'profile': await showProfile(version); break;
     default: await showHome(version);
   }
 }
-async function refreshToken() { const result = await request('bootstrap'); state.token = result.token; state.needsAccount = result.needsAccount; state.featuresReady = result.featuresReady; }
+async function refreshToken() { const result = await request('bootstrap'); state.token = result.token; state.needsAccount = result.needsAccount; state.featuresReady = result.featuresReady; state.mailReady = !!result.mailReady; state.correoConfigurado = !!result.correoConfigurado; if (!state.mailReady) state.mail = null; }
 $('#logout').addEventListener('click', async () => {
-  try { await request('logout', {}); state.user = null; state.profile = null; state.preferences = null; document.documentElement.removeAttribute('data-theme'); state.connection = null; state.change = ''; await refreshToken(); location.hash = 'login'; await route(); }
+  try { await request('logout', {}); state.user = null; state.profile = null; state.preferences = null; state.mail = null; document.documentElement.removeAttribute('data-theme'); state.connection = null; state.change = ''; await refreshToken(); location.hash = 'login'; await route(); }
   catch (error) { notify(error.message); }
 });
 window.addEventListener('hashchange', route);
 (async () => {
-  try { const data = await request('bootstrap'); Object.assign(state, { token:data.token, user:data.user, configured:data.configured, needsAccount:data.needsAccount, featuresReady:data.featuresReady }); $('#loading').hidden = true; app.hidden = false; await route(); }
+  try { const data = await request('bootstrap'); Object.assign(state, { token:data.token, user:data.user, configured:data.configured, needsAccount:data.needsAccount, featuresReady:data.featuresReady, mailReady:!!data.mailReady, correoConfigurado:!!data.correoConfigurado }); if (!state.mailReady) state.mail = null; $('#loading').hidden = true; app.hidden = false; await route(); }
   catch (error) { $('#loading').textContent = 'No se pudo iniciar LavaFácil. ' + error.message; }
 })();

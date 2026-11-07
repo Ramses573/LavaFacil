@@ -1,0 +1,67 @@
+﻿[
+    {
+        "Prueba":  "SQL-3.1 ejecucion valida devuelve IdUsuario/IdCliente",
+        "Estado":  "PASS",
+        "Evidencia":  "IdUsuario=1014, IdCliente=3012"
+    },
+    {
+        "Prueba":  "SQL-3.2 TipoUsuario=Cliente y Activo=1 en Usuarios y Clientes",
+        "Estado":  "PASS",
+        "Evidencia":  "TipoUsuario=Cliente, ActivoU=True, ActivoC=True"
+    },
+    {
+        "Prueba":  "SQL-3.2 ClaveHash con prefijo PBKDF2-SHA256$210000$",
+        "Estado":  "PASS",
+        "Evidencia":  "inicio=PBKDF2-SHA256$210000$2vBuG8fv3e1yo"
+    },
+    {
+        "Prueba":  "SQL-3.2 Clave con forma de GUID (NEWID()) y distinta de la contrasena",
+        "Estado":  "PASS",
+        "Evidencia":  "Clave=D8FAD8DD-AD0C-4AFD-9D3E-DBBB00B77968, distinta=True"
+    },
+    {
+        "Prueba":  "SQL-3.2 sin texto plano de la contrasena en ninguna columna",
+        "Estado":  "PASS",
+        "Evidencia":  "columnas con fuga: ninguna"
+    },
+    {
+        "Prueba":  "SQL-3.2 el hash recibido quedo en ClaveHash (no la contrasena)",
+        "Estado":  "PASS",
+        "Evidencia":  "ClaveHash==HashEnviado=True"
+    },
+    {
+        "Prueba":  "SQL-3.3 cedula repetida devuelve 50103",
+        "Estado":  "PASS",
+        "Evidencia":  "numero de error=50103"
+    },
+    {
+        "Prueba":  "SQL-3.3 usuario repetido devuelve 50103",
+        "Estado":  "PASS",
+        "Evidencia":  "numero de error=50103"
+    },
+    {
+        "Prueba":  "SQL-3.3 obligatorio vacio devuelve 50101",
+        "Estado":  "PASS",
+        "Evidencia":  "numero de error=50101"
+    },
+    {
+        "Prueba":  "SQL-3.3 Hash sin prefijo PBKDF2-SHA256 devuelve 50101",
+        "Estado":  "PASS",
+        "Evidencia":  "numero de error=50101"
+    },
+    {
+        "Prueba":  "SQL-3.4 atomicidad: sin Clientes ni Usuarios huerfanos tras los fallos",
+        "Estado":  "PASS",
+        "Evidencia":  "ClientesNuevos=0, UsuariosNuevos=0"
+    },
+    {
+        "Prueba":  "SQL-3.4 una sola fila por registro valido (sin duplicados)",
+        "Estado":  "PASS",
+        "Evidencia":  "Clientes=1, Usuarios=1"
+    },
+    {
+        "Prueba":  "SQL-3.5 limpieza confirmada (0 filas de prueba)",
+        "Estado":  "PASS",
+        "Evidencia":  "Usuarios autotest=0, Clientes AUTOTEST-SQL=0"
+    }
+]

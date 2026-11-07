@@ -1,0 +1,87 @@
+[
+    {
+        "prueba":  "login administrador",
+        "estado":  "PASS",
+        "detalle":  "{\"user\":{\"id\":1113,\"name\":\"QAESTADOSFA491486BF18498B9C536DF06AB577A5ADM\",\"role\":\"Administrador\"},\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\"}"
+    },
+    {
+        "prueba":  "endpoint estado Recibido",
+        "estado":  "PASS",
+        "detalle":  "status=200; body={\"rows\":[{\"IdPedido\":41,\"Estado\":\"Recibido\"}],\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\",\"checkedAt\":\"2026-11-06T21:06:42.9534423-06:00\"}"
+    },
+    {
+        "prueba":  "endpoint estado Recibido",
+        "estado":  "PASS",
+        "detalle":  "status=200; body={\"rows\":[{\"IdPedido\":41,\"Estado\":\"Recibido\"}],\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\",\"checkedAt\":\"2026-11-06T21:06:42.9647285-06:00\"}"
+    },
+    {
+        "prueba":  "endpoint estado En proceso",
+        "estado":  "PASS",
+        "detalle":  "status=200; body={\"rows\":[{\"IdPedido\":41,\"Estado\":\"En proceso\"}],\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\",\"checkedAt\":\"2026-11-06T21:06:42.9751838-06:00\"}"
+    },
+    {
+        "prueba":  "endpoint estado Listo",
+        "estado":  "PASS",
+        "detalle":  "status=200; body={\"rows\":[{\"IdPedido\":41,\"Estado\":\"Listo\"}],\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\",\"checkedAt\":\"2026-11-06T21:06:42.9863994-06:00\"}"
+    },
+    {
+        "prueba":  "endpoint estado Entregado",
+        "estado":  "PASS",
+        "detalle":  "status=200; body={\"rows\":[{\"IdPedido\":41,\"Estado\":\"Entregado\"}],\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\",\"checkedAt\":\"2026-11-06T21:06:42.9970254-06:00\"}"
+    },
+    {
+        "prueba":  "login cliente",
+        "estado":  "PASS",
+        "detalle":  "{\"user\":{\"id\":1114,\"name\":\"QAESTADOSFA491486BF18498B9C536DF06AB577A5CLI\",\"role\":\"Cliente\"},\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\"}"
+    },
+    {
+        "prueba":  "cliente no puede cambiar estado",
+        "estado":  "PASS",
+        "detalle":  "status=403; body={\"error\":\"La cuenta está inactiva o no tiene permiso para esta operación.\"}"
+    },
+    {
+        "prueba":  "pedido inexistente",
+        "estado":  "PASS",
+        "detalle":  "status=404; body={\"error\":\"El pedido no existe.\"}"
+    },
+    {
+        "prueba":  "Recibido a Pendiente",
+        "estado":  "PASS",
+        "detalle":  "status=400; body={\"error\":\"La transici?n de estado del pedido no es v?lida.\"}"
+    },
+    {
+        "prueba":  "Entregado a En proceso",
+        "estado":  "PASS",
+        "detalle":  "status=400; body={\"error\":\"El estado actual del pedido es terminal.\"}"
+    },
+    {
+        "prueba":  "Cancelado a Recibido",
+        "estado":  "PASS",
+        "detalle":  "status=400; body={\"error\":\"El estado actual del pedido es terminal.\"}"
+    },
+    {
+        "prueba":  "pedido sin email cambia sin cola",
+        "estado":  "PASS",
+        "detalle":  "status=200; body={\"rows\":[{\"IdPedido\":45,\"Estado\":\"Recibido\"}],\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\",\"checkedAt\":\"2026-11-06T21:06:43.0726363-06:00\"}"
+    },
+    {
+        "prueba":  "estado y cuatro colas",
+        "estado":  "PASS",
+        "detalle":  "[{\"IdPedido\":41,\"Estado\":\"Entregado\",\"Cola\":4},{\"IdPedido\":42,\"Estado\":\"Recibido\",\"Cola\":0},{\"IdPedido\":43,\"Estado\":\"Entregado\",\"Cola\":0},{\"IdPedido\":44,\"Estado\":\"Cancelado\",\"Cola\":0},{\"IdPedido\":45,\"Estado\":\"Recibido\",\"Cola\":0}]"
+    },
+    {
+        "prueba":  "sin email sin cola",
+        "estado":  "PASS",
+        "detalle":  "[{\"IdPedido\":41,\"Estado\":\"Entregado\",\"Cola\":4},{\"IdPedido\":42,\"Estado\":\"Recibido\",\"Cola\":0},{\"IdPedido\":43,\"Estado\":\"Entregado\",\"Cola\":0},{\"IdPedido\":44,\"Estado\":\"Cancelado\",\"Cola\":0},{\"IdPedido\":45,\"Estado\":\"Recibido\",\"Cola\":0}]"
+    },
+    {
+        "prueba":  "EML estado asunto/anterior/nuevo/total/detalle",
+        "estado":  "PASS",
+        "detalle":  "eml=4"
+    },
+    {
+        "prueba":  "HTML escapado",
+        "estado":  "PASS",
+        "detalle":  "eml=4"
+    }
+]

@@ -1,0 +1,21 @@
+{
+    "fecha": "2026-11-06",
+    "entorno": "Production",
+    "outboxActivo": false,
+    "build": "PASS",
+    "smtpDirecto": "PASS",
+    "smtpDirectoHost": "smtp.gmail.com",
+    "smtpDirectoPort": 587,
+    "smtpDirectoSsl": true,
+    "smtpDirectoMs": 1659,
+    "apiWorker": "PASS",
+    "pedidoApi": "PASS",
+    "correoEnvio": "PASS",
+    "correoEstado": "Enviado",
+    "limpieza": "PASS",
+    "residualesTemporales": 0,
+    "puerto5091Abierto": false,
+    "keysXmlResiduales": 0,
+    "bandeja": "NO_VERIFICADA",
+    "error": null
+}

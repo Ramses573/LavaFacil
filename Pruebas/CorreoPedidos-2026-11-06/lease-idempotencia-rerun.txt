@@ -1,0 +1,25 @@
+CheckName Estado
+--------- ------
+lease     PASS  
+
+(1 rows affected)
+CheckName      Estado
+-------------- ------
+resolver_retry PASS  
+
+(1 rows affected)
+CheckName           Estado
+------------------- ------
+idempotencia_pedido PASS  
+
+(1 rows affected)
+CheckName         Estado
+----------------- ------
+idempotencia_pago PASS  
+
+(1 rows affected)
+CheckName        Estado
+---------------- ------
+cliente_exposure PASS  
+
+(1 rows affected)

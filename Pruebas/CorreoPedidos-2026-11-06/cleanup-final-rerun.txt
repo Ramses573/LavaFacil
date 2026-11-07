@@ -1,0 +1,8 @@
+Tabla         Cantidad   
+------------- -----------
+Usuarios                0
+Empleados               0
+Pedidos                 0
+DetallePedido           0
+Pagos                   0
+CorreoEnvios            0

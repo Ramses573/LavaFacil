@@ -1,0 +1,30 @@
+{
+  "fecha": "2026-11-06",
+  "veredictoGlobal": "PASS",
+  "conteo": { "pass": 79, "fail": 0, "total": 79 },
+  "fallos": [],
+  "evidencias": {
+    "detencion": "PASS; procesos iniciales y finales detenidos",
+    "build": "PASS; dotnet build exit 0, 0 advertencias, 0 errores",
+    "javascript": "PASS; node --check app.js y correo.js",
+    "powershell": "PASS; 4 scripts parseados con Windows PowerShell 5.1",
+    "activador": "PASS; exit 0; MADRENZO confirmado y actualización confirmada",
+    "sql": "PASS; 18 comprobaciones: 5 SP, 3 columnas, default, tabla, 3 índices y 5 grants",
+    "sqlLegacy": "PASS; usp_ValidarLogin existe e incluye ClaveVersion",
+    "development": "PASS; 14/14 flujo outbox completo; OTP únicamente desde Codigo en cuerpo y ausencia de header/Subject OTP",
+    "invalidacionCookie": "PASS; cookie previa rechazó /api/home con 401 en 1 s",
+    "regresion": "PASS; 12/12 incluyendo contrato outbox sin header/Subject OTP, CSRF, Host, autorización, mirroring y recursos públicos",
+    "produccion": "PASS parcial; correoConfigurado=false y EML sin incremento; evidencia conservada obtuvo 400 por CSRF y no cubre la rama 503",
+    "rateLimit": "PASS; registro 200,200,200,200,200,429; login 401,401,401,401,401,429; Retry-After capturados",
+    "loginLegacy": "PASS; cuenta temporal legacy autenticó con 200 tras ClaveHash=NULL",
+    "loginPbkdf2": "PASS; login con hash PBKDF2 cubierto en Development",
+    "limpieza": "PASS; usuarios=0, clientes=0, tokens huérfanos=0, EML=0, procesos=0, puertos libres",
+    "constraintsTokensCorreo": "PASS; las 4 copias del validador/script usan datetime2 precisión 6"
+  },
+  "huecos": [
+    "No se probó SMTP real, navegador headless ni concurrencia.",
+    "La invalidación se probó con reset; no hay endpoint independiente de cambio de clave.",
+    "La petición de recuperación Production no llegó a autenticación CSRF válida; bootstrap y ausencia de EML sí fueron verificadas.",
+    "El rate limit de login se ejecutó con la ventana ya activa; no se aisló el umbral exacto 5/10 min en una IP nueva."
+  ]
+}

@@ -1,0 +1,9 @@
+﻿  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos est├ín actualizados para la restauraci├│n.
+  LavaFacil.GraphQL -> C:\Users\jm076\OneDrive\Desktop\GITHUB RAMSES\LavaFacil\Proyecto2\03-Backend-GraphQL\LavaFacil.GraphQL\bin\Release\net9.0\LavaFacil.GraphQL.dll
+
+Compilaci├│n correcta.
+    0 Advertencia(s)
+    0 Errores
+
+Tiempo transcurrido 00:00:01.22

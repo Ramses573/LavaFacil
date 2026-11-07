@@ -1,0 +1,12 @@
+[
+    {
+        "prueba":  "ejecucion real de pago",
+        "estado":  "HUECO",
+        "detalle":  "Error en el servidor remoto: (400) Solicitud incorrecta."
+    },
+    {
+        "prueba":  "limpieza temporal U/E/P/D/Pago/CorreoEnvios",
+        "estado":  "PASS",
+        "detalle":  "resultado=0 0 0 0 0 0  (1 rows affected)"
+    }
+]

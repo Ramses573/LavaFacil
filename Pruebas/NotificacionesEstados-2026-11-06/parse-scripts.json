@@ -1,0 +1,30 @@
+﻿[
+    {
+        "file":  "C:\\Users\\jm076\\OneDrive\\Desktop\\GITHUB RAMSES\\LavaFacil\\SQL\\Activar-Mejoras.ps1",
+        "errors":  0
+    },
+    {
+        "file":  "C:\\Users\\jm076\\OneDrive\\Desktop\\GITHUB RAMSES\\LavaFacil\\Pruebas\\CorreoPedidos-2026-11-06\\actualizar-pago-focalizado.ps1",
+        "errors":  0
+    },
+    {
+        "file":  "C:\\Users\\jm076\\OneDrive\\Desktop\\GITHUB RAMSES\\LavaFacil\\Pruebas\\CorreoPedidos-2026-11-06\\ejecutar-smtp-real.ps1",
+        "errors":  0
+    },
+    {
+        "file":  "C:\\Users\\jm076\\OneDrive\\Desktop\\GITHUB RAMSES\\LavaFacil\\Pruebas\\CorreoPedidos-2026-11-06\\otp-pago-real.ps1",
+        "errors":  0
+    },
+    {
+        "file":  "C:\\Users\\jm076\\OneDrive\\Desktop\\GITHUB RAMSES\\LavaFacil\\Pruebas\\CorreoPedidos-2026-11-06\\pago-real.ps1",
+        "errors":  0
+    },
+    {
+        "file":  "C:\\Users\\jm076\\OneDrive\\Desktop\\GITHUB RAMSES\\LavaFacil\\Pruebas\\CorreoPedidos-2026-11-06\\run-focalizado-directo.ps1",
+        "errors":  0
+    },
+    {
+        "file":  "C:\\Users\\jm076\\OneDrive\\Desktop\\GITHUB RAMSES\\LavaFacil\\Pruebas\\CorreoPedidos-2026-11-06\\run-order.ps1",
+        "errors":  0
+    }
+]

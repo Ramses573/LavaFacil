@@ -1,0 +1,36 @@
+{
+  "fecha": "2026-11-06",
+  "veredictoGlobal": "PASS",
+  "conteo": { "pass": 16, "fail": 0, "total": 16 },
+  "fallos": [],
+  "evidencias": {
+    "buildWeb": "PASS; dotnet build -c Release exit 0, 0 advertencias, 0 errores",
+    "buildGraphql": "PASS; dotnet build -c Release exit 0, 0 advertencias, 0 errores",
+    "powershellParse": "PASS; 7 scripts, 0 errores",
+    "activador": "PASS; exit 0; MADRENZO confirmado y actualizacion confirmada",
+    "endpointEstados": "PASS; 16/16 checks endpoint estado: login, transiciones validas, idempotencia, invalidas/terminales, permisos, pedido inexistente, EML, HTML escapado",
+    "pedidoCreado": "PASS; 6/6 checks",
+    "comprobantePago": "FAIL; flujo completo: Error en el servidor remoto: (400) Solicitud incorrecta. (Preexistente, igual en corrida previa)",
+    "limpieza": "PASS; EMLs=0; residuales QA=0; procesos detenidos; puertos libres"
+  },
+  "checks": [
+    { "prueba": "login administrador", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "endpoint estado Recibido", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "endpoint estado Recibido", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "endpoint estado En proceso", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "endpoint estado Listo", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "endpoint estado Entregado", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "login cliente", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "cliente no puede cambiar estado", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "pedido inexistente", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "Recibido a Pendiente", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "Entregado a En proceso", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "Cancelado a Recibido", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "pedido sin email cambia sin cola", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "estado y cuatro colas", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "sin email sin cola", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "EML estado asunto/anterior/nuevo/total/detalle", "estado": "PASS", "detalle": "PASS" },
+    { "prueba": "HTML escapado", "estado": "PASS", "detalle": "PASS" }
+  ],
+  "resumen": "Re-ejecucion completa de notificaciones de estados sobre MADRENZO: builds 0 errores, parse OK, activador OK, endpoint 16/16 PASS, idempotencia OK, invalidas/terminales OK, permisos OK, PedidoCreado OK, ComprobantePago con fallo preexistente, limpieza absoluta OK."
+}

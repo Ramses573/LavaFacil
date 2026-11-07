@@ -1,0 +1,67 @@
+﻿[
+    {
+        "Prueba":  "API-4.1 GET /api/bootstrap -\u003e 200 con configured=true y featuresReady=true (token CSRF)",
+        "Estado":  "PASS",
+        "Evidencia":  "status=200, configured=True, featuresReady=True, token presente=True"
+    },
+    {
+        "Prueba":  "API-4.2 POST /api/register sin X-CSRF-TOKEN -\u003e 400",
+        "Estado":  "PASS",
+        "Evidencia":  "status=400"
+    },
+    {
+        "Prueba":  "API-4.3 POST /api/register con Host alterado -\u003e 403",
+        "Estado":  "PASS",
+        "Evidencia":  "status=403"
+    },
+    {
+        "Prueba":  "API-4.4 registro valido -\u003e 200, user.role=Cliente, cookie LavaFacil.Session, sin clave ni hash",
+        "Estado":  "PASS",
+        "Evidencia":  "status=200, role=Cliente, cookie=True, sinExponer=True, name=autotest.api.1"
+    },
+    {
+        "Prueba":  "API-4.9 (A-02) POST /api/register responde 200 y NO 500/503 con featuresReady=true",
+        "Estado":  "PASS",
+        "Evidencia":  "status=200, featuresReady=True"
+    },
+    {
+        "Prueba":  "API-4.5 GET /api/profile -\u003e 200",
+        "Estado":  "PASS",
+        "Evidencia":  "status=200"
+    },
+    {
+        "Prueba":  "API-4.5 GET /api/clients como Cliente -\u003e 403",
+        "Estado":  "PASS",
+        "Evidencia":  "status=403, cuerpo={\"error\":\"La cuenta está inactiva o no tiene permiso para esta operación.\"}"
+    },
+    {
+        "Prueba":  "API-4.6 logout 200 + login real 200 con user.role=Cliente",
+        "Estado":  "PASS",
+        "Evidencia":  "logout=200, login=200, role=Cliente"
+    },
+    {
+        "Prueba":  "API-4.7 registro duplicado -\u003e 400 con una sola fila en BD",
+        "Estado":  "PASS",
+        "Evidencia":  "status=400, Usuarios=1, Clientes=1, msg={\"error\":\"Ya existe un cliente con esa cédula. Si es tu cuenta, contacta al administrador.\"}"
+    },
+    {
+        "Prueba":  "API-4.8 password de 8 caracteres (\u003c10) -\u003e 400",
+        "Estado":  "PASS",
+        "Evidencia":  "status=400, msg={\"error\":\"Usa una contraseña de al menos 10 caracteres.\"}"
+    },
+    {
+        "Prueba":  "API-4.8 correo invalido -\u003e 400",
+        "Estado":  "PASS",
+        "Evidencia":  "status=400, msg={\"error\":\"Ingresa un correo electrónico válido.\"}"
+    },
+    {
+        "Prueba":  "API-4.8 nombre vacio -\u003e 400",
+        "Estado":  "PASS",
+        "Evidencia":  "status=400, msg={\"error\":\"Nombre es obligatorio y admite hasta 50 caracteres.\"}"
+    },
+    {
+        "Prueba":  "API-4.10 limpieza de la cuenta de prueba confirmada (0 filas)",
+        "Estado":  "PASS",
+        "Evidencia":  "Usuarios=0, Clientes=0"
+    }
+]

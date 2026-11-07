@@ -1,0 +1,12 @@
+[
+    {
+        "prueba":  "login GraphQL JWT temporal",
+        "estado":  "PASS",
+        "detalle":  "{\"data\":{\"login\":{\"exito\":true,\"token\":\"REDACTADO\",\"mensaje\":\"Inicio de sesión correcto.\"}}}"
+    },
+    {
+        "prueba":  "flujo pago autenticado",
+        "estado":  "HUECO",
+        "detalle":  "Error en el servidor remoto: (400) Solicitud incorrecta."
+    }
+]

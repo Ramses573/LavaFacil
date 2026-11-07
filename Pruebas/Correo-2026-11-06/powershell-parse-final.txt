@@ -1,0 +1,4 @@
+PASS .\SQL\Activar-Mejoras.ps1
+PASS .\Pruebas\Correo-2026-11-06\fase-api.ps1
+PASS .\Pruebas\Correo-2026-11-06\validacion-complementaria.ps1
+PASS .\Pruebas\Correo-2026-11-06\limpieza-final.ps1

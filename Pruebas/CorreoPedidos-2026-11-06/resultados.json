@@ -1,0 +1,25 @@
+{
+  "fecha": "2026-11-06",
+  "pruebaFocalizadaDirecta": "PASS",
+  "fixture": { "IdUsuario": 1103, "IdPedido": 20, "IdPago": 10, "IdPagoAnulado": 11 },
+  "actualizarPago": {
+    "pendienteAPagado": "PASS",
+    "correoEnviosComprobante": 1,
+    "repetirPagadoSinDuplicado": "PASS",
+    "montoSuperior": { "estado": "PASS", "codigo": 50101, "mensaje": "El monto del pago no puede superar el total del pedido." },
+    "pagadoAPendiente": { "estado": "PASS", "codigo": 50101, "mensaje": "La transici�n del estado del pago no es v�lida." },
+    "pagadoAAnulado": { "estado": "PASS", "codigo": 50101, "mensaje": "La transici�n del estado del pago no es v�lida." },
+    "anuladoAPagado": { "estado": "PASS", "codigo": 50101, "mensaje": "La transici�n del estado del pago no es v�lida." },
+    "anuladoAPendiente": { "estado": "PASS", "codigo": 50101, "mensaje": "La transici�n del estado del pago no es v�lida." }
+  },
+  "datos": { "pedidoTotal": 100.00, "datosJsonBytes": 668 },
+  "lease": {
+    "tokenA": "29E7C3AD-A78B-4442-9E13-08C2F7913ACC",
+    "tokenB": "2496F117-ADEC-4E62-8D49-4C65A78F145A",
+    "tokenIncorrecto": { "estado": "PASS", "codigo": 50104, "mensaje": "El env�o no existe, no est� en procesamiento o el lease ya expir�." },
+    "tokenATrasReclaim": { "estado": "PASS", "codigo": 50104 },
+    "tokenBResuelveEnviado": "PASS"
+  },
+  "limpieza": { "qaDirectoEmpleados": 0, "usuarios": 0, "clientes": 0, "pedidos": 0, "pagos": 0, "correoEnvios": 0, "eml": 0, "procesosLavaFacil": 0, "keysExistentesPreservadas": 1, "connectionDpapi": "preservado/no tocado" },
+  "huecos": ["SMTP/EML no probado por instrucci�n", "sin comparaci�n antes/despu�s porque no hubo arreglo de producci�n"]
+}

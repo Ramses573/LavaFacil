@@ -1,0 +1,9 @@
+{
+    "ready":  true,
+    "correoConfigurado":  false,
+    "mailReady":  true,
+    "requestStatus":  400,
+    "requestBody":  "{\"error\":\"La sesión del formulario venció. Recarga la página.\"}",
+    "emlBefore":  4,
+    "emlAfter":  4
+}

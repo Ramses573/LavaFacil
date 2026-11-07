@@ -1,0 +1,15 @@
+SET NOCOUNT ON;
+DECLARE @tag varchar(80)='$(pTag)',@cli int=$(pCli),@svc int=$(pSvc),@entrega datetime=DATEADD(day,1,GETDATE());
+DECLARE @id1 int,@id2 int,@id3 int,@noemail int,@id4 int,@o1 varchar(100)=@tag+'-INVALIDO',@o2 varchar(100)=@tag+'-TERMINAL',@o3 varchar(100)=@tag+'-CANCELADO',@o4 varchar(100)=@tag+'-NOEMAIL';
+EXEC dbo.InsertarPedido @IdCliente=@cli,@FechaEntregaEstimada=@entrega,@Estado='Recibido',@Total=100,@Observaciones=@o1;
+SELECT @id1=IdPedido FROM dbo.Pedidos WHERE Observaciones=@o1;
+EXEC dbo.InsertarPedido @IdCliente=@cli,@FechaEntregaEstimada=@entrega,@Estado='Entregado',@Total=100,@Observaciones=@o2;
+SELECT @id2=IdPedido FROM dbo.Pedidos WHERE Observaciones=@o2;
+EXEC dbo.InsertarPedido @IdCliente=@cli,@FechaEntregaEstimada=@entrega,@Estado='Cancelado',@Total=100,@Observaciones=@o3;
+SELECT @id3=IdPedido FROM dbo.Pedidos WHERE Observaciones=@o3;
+DECLARE @cedNoEmail varchar(20)=LEFT(REPLACE(@tag,'-',''),18)+'N';
+EXEC dbo.InsertarCliente @Cedula=@cedNoEmail,@Nombre='QA',@Apellidos='Sin Email',@Telefono='5550000002',@Email='',@Direccion='Temporal';
+SELECT @noemail=IdCliente FROM dbo.Clientes WHERE Cedula=@cedNoEmail;
+EXEC dbo.InsertarPedido @IdCliente=@noemail,@FechaEntregaEstimada=@entrega,@Estado='Pendiente',@Total=100,@Observaciones=@o4;
+SELECT @id4=IdPedido FROM dbo.Pedidos WHERE Observaciones=@o4;
+SELECT CONCAT('EXTRA|',@id1,'|',@id2,'|',@id3,'|',@id4,'|',@noemail);

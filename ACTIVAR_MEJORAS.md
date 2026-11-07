@@ -2,9 +2,9 @@
 
 ## Estado de esta entrega
 
-El código y la actualización de SQL están preparados y probados en una base aislada de la portátil. La actualización NO se aplicó a MADRENZO ni a Rachel: el servidor configurado no respondió y se acordó activarla después.
+La actualización ya fue aplicada y confirmada en `MADRENZO/LavaFacil` mediante `SQL/Activar-Mejoras.ps1`. El flujo de correo, la invalidación de sesiones y la compatibilidad con el login anterior también quedaron verificados. La evidencia está en `Pruebas/Correo-2026-11-06/RESULTADO.md`.
 
-Hasta aplicar la actualización, la nueva versión conserva las pantallas anteriores. Las funciones nuevas se habilitan cuando la base tiene todos los procedimientos necesarios.
+No vuelvas a ejecutar la activación salvo que estés instalando esta versión en otra base. Si necesitás comprobar el estado, ejecutá el activador y confirmá el mensaje **Actualización confirmada**; no consideres terminada una ejecución con error.
 
 ## Activación desde tu portátil
 
@@ -39,7 +39,15 @@ Con una cuenta administradora, conectarse al servidor que actualmente sea princi
 - Personal: consulta pedidos de todos los clientes y actualiza su estado. El mantenimiento de servicios y la creación de cuentas quedan reservados al Administrador.
 - Administrador: en Clientes, usar **Crear cuenta de cliente** para habilitar el acceso de un cliente ya registrado. La cuenta creada siempre tiene rol Cliente; no existe autorregistro de administradores.
 - Perfil: datos personales, avatar predefinido, tema de colores, biografía y dirección para clientes. No hay subida de fotografías en esta versión.
-- Contraseña: cambiar la propia verificando la actual y cerrando la sesión de este navegador. Las cuentas nuevas y claves cambiadas usan PBKDF2-SHA256; las cuentas anteriores siguen funcionando. Las sesiones previamente abiertas en otros navegadores no se revocan automáticamente.
+- Contraseña: cambiar la propia verificando la actual y cerrando la sesión de este navegador. Las cuentas nuevas y claves cambiadas usan PBKDF2-SHA256; las cuentas anteriores siguen funcionando. Al cambiar o restablecer una clave se incrementa `ClaveVersion`, por lo que las cookies de sesión anteriores dejan de ser válidas en la siguiente petición, también en otros navegadores.
+
+## Correo: configuración y operación local
+
+- Para configurar SMTP ejecutá `Tools/Configurar-Correo.ps1` desde la raíz del proyecto. El script solicita la clave de aplicación de forma segura, envía primero un correo de prueba y solo guarda la configuración cifrada en `Data/correo.dpapi` si la prueba funciona. Reiniciá la aplicación después de cambiarla.
+- Para pruebas, `LAVAFACIL_CORREO_SALIDA` funciona como outbox **solo en los entornos Development o Test**: los mensajes se escriben como archivos `.eml` en la carpeta indicada, sin enviarse por SMTP. En Production esa variable no habilita el outbox; se requiere una configuración SMTP válida.
+- Verificá el correo desde la operación normal de verificación o recuperación. Si no llega, revisá primero que la aplicación se haya reiniciado, que la configuración SMTP corresponda al mismo usuario de Windows que la creó y que el proveedor acepte la clave de aplicación. En Development/Test podés revisar el `.eml` generado; después eliminá los `.eml` de la carpeta configurada para no conservar códigos.
+- Los límites de correo son locales y están en memoria: aplican a una sola instancia y no coordinan entre procesos o nodos; al reiniciar la aplicación se reinician sus contadores. No los uses como control distribuido.
+- La aplicación está restringida a loopback (`127.0.0.1`/`localhost`). No la expongas fuera de loopback sin HTTPS y certificados confiables.
 
 ## Cálculo de tarifas
 
@@ -57,4 +65,4 @@ Se agrega la columna nullable `Usuarios.ClaveHash`, la tabla `PerfilesApp` y 12 
 
 Compilación .NET 9 sin errores ni advertencias. 27 comprobaciones HTTP sobre SQL Express local, más recorrido de navegador: alta de servicio, pedido de dos servicios, consulta de detalle, personalización y menú del cliente. Se verificó que un cliente no consulte pedidos ajenos, cambie estados ni administre servicios/cuentas, y que los precios históricos se mantengan.
 
-Evidencias en `Pruebas/Mejoras_20261017`. Las capturas y registros de prueba corresponden a una base QA independiente, no a los datos reales ni a una nueva prueba de Mirroring. La activación y la prueba de conmutación con esta versión quedan pendientes para cuando los servidores estén disponibles. No se publicó esta versión en GitHub.
+Evidencias en `Pruebas/Mejoras_20261017` y `Pruebas/Correo-2026-11-06`. Las capturas y registros de prueba corresponden a bases QA o a la validación controlada indicada en cada resultado; no constituyen una nueva prueba de Mirroring. La activación de esta versión ya está confirmada en `MADRENZO/LavaFacil`. Las pruebas reales de caída/conmutación deben coordinarse por separado antes de apagar o cambiar roles. No se publicó esta versión en GitHub.

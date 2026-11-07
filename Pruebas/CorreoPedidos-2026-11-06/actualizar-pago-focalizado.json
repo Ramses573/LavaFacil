@@ -1,0 +1,42 @@
+﻿[
+    {
+        "prueba":  "login GraphQL JWT temporal",
+        "estado":  "PASS",
+        "detalle":  "{\"exito\":true,\"mensaje\":\"Inicio de sesión correcto.\",\"usuario\":\"qa.focalizado.20261107011447940\"}"
+    },
+    {
+        "prueba":  "pedido y pago temporales tienen IDs reales",
+        "estado":  "PASS",
+        "detalle":  "idPedido=16; idPago=9"
+    },
+    {
+        "prueba":  "ActualizarPago HTTP response captured",
+        "estado":  "PASS",
+        "detalle":  "HTTP 200; body completo en actualizar-pago-focalizado-response.json"
+    },
+    {
+        "prueba":  "ActualizarPago con IDs reales",
+        "estado":  "PASS",
+        "detalle":  "HTTP 200; {\"data\":{\"actualizarPago\":{\"exito\":true,\"mensaje\":\"app_ActualizarPagoSeguro ejecutado correctamente.\"}}}"
+    },
+    {
+        "prueba":  "Pago quedó Pagado y EML/CorreoEnvios asociado",
+        "estado":  "PASS",
+        "detalle":  "[{\"IdPago\":9,\"IdPedido\":16,\"Monto\":123.45,\"MetodoPago\":\"Efectivo\",\"EstadoPago\":\"Pagado\",\"Referencia\":\"QA-FOCAL-20261107011447940\",\"IdEnvio\":3,\"Tipo\":\"ComprobantePago\",\"ClaveUnica\":\"pago:9:comprobante\",\"Estado\":\"Pendiente\",\"DatosJson\":\"{\\\"IdPago\\\":9,\\\"IdPed"
+    },
+    {
+        "prueba":  "repetición no duplica CorreoEnvios",
+        "estado":  "PASS",
+        "detalle":  "repeat={\"data\":{\"actualizarPago\":{\"exito\":true,\"mensaje\":\"app_ActualizarPagoSeguro ejecutado correctamente.\"}}}; count=1"
+    },
+    {
+        "prueba":  "ID cruzado rechazado",
+        "estado":  "PASS",
+        "detalle":  "{\"data\":{\"actualizarPago\":{\"exito\":false,\"mensaje\":\"Los datos del pago no son v?lidos.\"}}}"
+    },
+    {
+        "prueba":  "limpieza MADRENZO",
+        "estado":  "PASS",
+        "detalle":  "pedido, pago, detalle, correo, servicio, cliente, usuario y empleado temporales eliminados"
+    }
+]

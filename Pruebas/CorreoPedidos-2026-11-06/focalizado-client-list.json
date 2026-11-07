@@ -1,0 +1,90 @@
+{
+    "data":  {
+                 "clientes":  [
+                                  {
+                                      "idCliente":  1007,
+                                      "cedula":  "DEMO-CLIENTE-1"
+                                  },
+                                  {
+                                      "idCliente":  1008,
+                                      "cedula":  "DEMO-CLIENTE-2"
+                                  },
+                                  {
+                                      "idCliente":  1009,
+                                      "cedula":  "DEMO-CLIENTE-3"
+                                  },
+                                  {
+                                      "idCliente":  1010,
+                                      "cedula":  "305430021"
+                                  },
+                                  {
+                                      "idCliente":  2011,
+                                      "cedula":  "305430023"
+                                  },
+                                  {
+                                      "idCliente":  3027,
+                                      "cedula":  "RATE-TEST-20261106"
+                                  },
+                                  {
+                                      "idCliente":  3048,
+                                      "cedula":  "RL-20261106235927-1"
+                                  },
+                                  {
+                                      "idCliente":  3049,
+                                      "cedula":  "RL-20261106235927-2"
+                                  },
+                                  {
+                                      "idCliente":  3050,
+                                      "cedula":  "RL-20261106235927-3"
+                                  },
+                                  {
+                                      "idCliente":  3051,
+                                      "cedula":  "RL-20261106235927-4"
+                                  },
+                                  {
+                                      "idCliente":  3052,
+                                      "cedula":  "RL-20261106235927-5"
+                                  },
+                                  {
+                                      "idCliente":  3061,
+                                      "cedula":  "Q20261107005137870"
+                                  },
+                                  {
+                                      "idCliente":  3062,
+                                      "cedula":  "Q20261107005214362"
+                                  },
+                                  {
+                                      "idCliente":  3063,
+                                      "cedula":  "Q20261107005324411"
+                                  },
+                                  {
+                                      "idCliente":  3064,
+                                      "cedula":  "Q20261107005343426"
+                                  },
+                                  {
+                                      "idCliente":  3065,
+                                      "cedula":  "Q20261107005400427"
+                                  },
+                                  {
+                                      "idCliente":  3066,
+                                      "cedula":  "Q20261107005413572"
+                                  },
+                                  {
+                                      "idCliente":  3067,
+                                      "cedula":  "QAC20261107005815458"
+                                  },
+                                  {
+                                      "idCliente":  3068,
+                                      "cedula":  "QAC20261107005836454"
+                                  },
+                                  {
+                                      "idCliente":  3069,
+                                      "cedula":  "QAC20261107005857101"
+                                  },
+                                  {
+                                      "idCliente":  3084,
+                                      "cedula":  "QAF-C-20261107011447"
+                                  }
+                              ]
+             }
+}

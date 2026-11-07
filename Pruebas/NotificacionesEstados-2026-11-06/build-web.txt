@@ -1,0 +1,9 @@
+﻿  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos est├ín actualizados para la restauraci├│n.
+  LavaFacil.Web -> C:\Users\jm076\OneDrive\Desktop\GITHUB RAMSES\LavaFacil\LavaFacil.Web\bin\Release\net9.0\LavaFacil.Web.dll
+
+Compilaci├│n correcta.
+    0 Advertencia(s)
+    0 Errores
+
+Tiempo transcurrido 00:00:01.23

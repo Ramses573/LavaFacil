@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Antiforgery;
@@ -20,11 +21,30 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     o.ExpireTimeSpan = TimeSpan.FromHours(2);
     o.Events.OnRedirectToLogin = c => { c.Response.StatusCode = 401; return Task.CompletedTask; };
     o.Events.OnRedirectToAccessDenied = c => { c.Response.StatusCode = 403; return Task.CompletedTask; };
+    o.Events.OnValidatePrincipal = async c => {
+        var idText = c.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var versionText = c.Principal?.FindFirstValue(ClaimTypes.SerialNumber);
+        if (!int.TryParse(idText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id)
+            || !int.TryParse(versionText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var version)) {
+            c.RejectPrincipal();
+            return;
+        }
+
+        try {
+            var current = await c.HttpContext.RequestServices.GetRequiredService<Database>().GetActiveCredentialVersion(id);
+            if (current is null || current.Value != version) c.RejectPrincipal();
+        } catch (Exception) {
+            // No convertir una indisponibilidad de SQL en un error para endpoints públicos;
+            // una cookie no validable se trata como una sesión anónima.
+            c.RejectPrincipal();
+        }
+    };
 });
 builder.Services.AddAuthorization();
 builder.Services.AddAntiforgery(o => { o.HeaderName = "X-CSRF-TOKEN"; o.Cookie.SameSite = SameSiteMode.Strict; });
 builder.Services.AddSingleton<Database>();
-builder.Services.AddSingleton<MirrorMonitor>();
+builder.Services.AddSingleton<CorreoSmtp>();
+builder.Services.AddHostedService<CorreoPedidos>();
 var app = builder.Build();
 // El token CSRF debe validarse contra la identidad recuperada de la cookie.
 app.UseAuthentication();
@@ -47,9 +67,10 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseAuthorization();
 
-app.MapGet("/api/bootstrap", async (HttpContext ctx, IAntiforgery csrf, Database db) => {
+app.MapGet("/api/bootstrap", async (HttpContext ctx, IAntiforgery csrf, Database db, CorreoSmtp mail) => {
     var needsAccount = false;
     var featuresReady = false;
+    var mailReady = false;
     if (db.Configured && ctx.User.Identity?.IsAuthenticated != true) {
         try { var initial = await db.Call("app_EstadoInicial", Array.Empty<SqlParameter>()); needsAccount = Convert.ToBoolean(initial.Rows[0]["RequiereAdministrador"]); }
         catch (SqlException) { /* Login sigue disponible para mostrar el error de conexión al intentar entrar. */ }
@@ -57,10 +78,13 @@ app.MapGet("/api/bootstrap", async (HttpContext ctx, IAntiforgery csrf, Database
     if (db.Configured) {
         try { featuresReady = await db.HasFeatures(); }
         catch (SqlException) { /* La pantalla de conexión informará la indisponibilidad. */ }
+        try { mailReady = await db.HasCorreo(); }
+        catch (SqlException) { /* El módulo de correo queda deshabilitado hasta migrar la base. */ }
     }
     return Results.Json(new {
         token = csrf.GetAndStoreTokens(ctx).RequestToken,
-        configured = db.Configured, needsAccount, featuresReady,
+        configured = db.Configured, needsAccount, featuresReady, mailReady,
+        correoConfigurado = mail.Configurado || mail.OutboxActivo,
         user = ctx.User.Identity?.IsAuthenticated == true ? new { id = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier), name = ctx.User.Identity.Name, role = ctx.User.FindFirstValue(ClaimTypes.Role) } : null
     });
 });
@@ -73,11 +97,20 @@ app.MapPost("/api/setup", async (ConnectionInput input, Database db) => {
 app.MapPost("/api/login", async (LoginInput input, Database db, HttpContext ctx) => {
     Database.Required(input.Username, "Usuario", 50);
     Database.Required(input.Password, "Contraseña", 255);
-    var result = await AppPasswords.Authenticate(db, input.Username, input.Password);
+    // Normaliza igual que /api/register para que el alta y el login coincidan.
+    var username = input.Username.Trim();
+    var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "local";
+    var ipKey = $"login:ip:{ip}";
+    var userKey = $"login:user:{username.ToUpperInvariant()}";
+    if (!LimitesCorreo.Permite(ipKey, 10, TimeSpan.FromMinutes(10))) return LoginRateLimited(ctx, ipKey);
+    if (!LimitesCorreo.Permite(userKey, 5, TimeSpan.FromMinutes(10))) return LoginRateLimited(ctx, userKey);
+
+    var result = await AppPasswords.Authenticate(db, username, input.Password);
     var row = result.Rows.FirstOrDefault();
     if (row is null || !Convert.ToBoolean(row["LoginValido"])) return Results.Json(new { error = "Usuario o contraseña incorrectos, o cuenta inactiva." }, statusCode: 401);
-    var claims = new[] { new Claim(ClaimTypes.NameIdentifier, Convert.ToString(row["IdUsuario"])!), new Claim(ClaimTypes.Name, Convert.ToString(row["NombreUsuario"])!), new Claim(ClaimTypes.Role, Convert.ToString(row["TipoUsuario"])!) };
-    await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
+    LimitesCorreo.Liberar(ipKey);
+    LimitesCorreo.Liberar(userKey);
+    await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, AuthenticatedPrincipal(row));
     return Results.Ok(new { user = new { id = row["IdUsuario"], name = row["NombreUsuario"], role = row["TipoUsuario"] }, result.Server, result.DatabaseName });
 });
 app.MapPost("/api/logout", async (HttpContext ctx) => { await ctx.SignOutAsync(); return Results.Ok(); }).RequireAuthorization();
@@ -90,6 +123,31 @@ app.MapPost("/api/first-account", async (FirstAccountInput input, Database db) =
         Database.Param("Cedula",input.Identity.Trim(),20),Database.Param("Nombre",input.Name.Trim(),50),Database.Param("Apellidos",input.LastName.Trim(),100),
         Database.Param("Telefono",input.Phone.Trim(),20),Database.Param("Email",input.Email.Trim(),150),Database.Param("NombreUsuario",input.Username.Trim(),50),Database.Param("Clave",input.Password,255)
     }));
+});
+app.MapPost("/api/register", async (RegisterInput input, Database db, HttpContext ctx) => {
+    var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "local";
+    var rateKey = $"register:ip:{ip}";
+    var hourly = LimitesCorreo.Permite(rateKey, 5, TimeSpan.FromHours(1));
+    var daily = hourly && LimitesCorreo.Permite(rateKey, 20, TimeSpan.FromDays(1));
+    if (!hourly || !daily) return RegisterRateLimited(ctx, rateKey);
+
+    Database.Required(input.Identity, "Cédula", 20);
+    ValidateContact(input.Name, input.LastName, input.Phone, input.Email);
+    if (input.Address?.Length > 250) throw new ArgumentException("La dirección admite hasta 250 caracteres.");
+    Database.Required(input.Username, "Usuario", 50);
+    AppPasswords.CheckNew(input.Password);
+    var hash = AppPasswords.Hash(input.Password);
+    await db.Call("app_AutoRegistroCliente", new[] {
+        Database.Param("Cedula",input.Identity.Trim(),20), Database.Param("Nombre",input.Name.Trim(),50), Database.Param("Apellidos",input.LastName.Trim(),100),
+        Database.Param("Telefono",input.Phone.Trim(),20), Database.Param("Email",input.Email.Trim(),150), Database.Param("Direccion",input.Address?.Trim(),250),
+        Database.Param("NombreUsuario",input.Username.Trim(),50), Database.Param("Hash",hash,255)
+    });
+    var result = await AppPasswords.Authenticate(db, input.Username.Trim(), input.Password);
+    var row = result.Rows.FirstOrDefault();
+    if (row is null || !Convert.ToBoolean(row["LoginValido"])) throw new InvalidOperationException("La cuenta se creó pero no se pudo iniciar automáticamente. Inicia sesión con tus credenciales.");
+    await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, AuthenticatedPrincipal(row));
+    // Endpoint anónimo: no se devuelve la topología del servidor en el 200 (H-03/B-02).
+    return Results.Ok(new { user = new { id = row["IdUsuario"], name = row["NombreUsuario"], role = row["TipoUsuario"] } });
 });
 var authenticated = app.MapGroup("/api").RequireAuthorization();
 authenticated.MapGet("/home", async (HttpContext ctx, Database db) => await db.Call("app_Resumen", new[] { Database.Id(ctx) }));
@@ -107,24 +165,56 @@ authenticated.MapPost("/clients", async (ClientInput input, HttpContext ctx, Dat
     return Results.Ok(await db.Call("app_RegistrarCliente", new[] { Database.Id(ctx), Database.Param("Cedula", input.Identity.Trim(), 20), Database.Param("Nombre", input.Name.Trim(), 50), Database.Param("Apellidos", input.LastName.Trim(), 100), Database.Param("Telefono", input.Phone.Trim(), 20), Database.Param("Email", input.Email.Trim(), 150), Database.Param("Direccion", input.Address?.Trim(), 250) }));
 });
 FeatureRoutes.Map(authenticated);
-authenticated.MapGet("/health", async (HttpContext ctx, MirrorMonitor monitor) => {
-    var result = await monitor.Check();
-    // Clientes y empleados reciben solo disponibilidad; la topología es exclusiva del administrador.
-    if (ctx.User.IsInRole("Administrador")) return Results.Json((object)result);
-    return Results.Json((object)new { result.CheckedAt, result.ApplicationAvailable,
-        message = result.ApplicationAvailable ? "Conexión disponible." : "No podemos confirmar la conexión. Conserva el formulario y vuelve a comprobar antes de guardar." });
-});
+CorreoRoutes.Map(app, authenticated);
 app.Run();
 
 static void ValidateContact(string name, string lastName, string phone, string email) {
     Database.Required(name, "Nombre", 50); Database.Required(lastName, "Apellidos", 100); Database.Required(phone, "Teléfono", 20); Database.Required(email, "Correo", 150);
     if (!System.Net.Mail.MailAddress.TryCreate(email, out var parsed) || parsed.Address != email) throw new ArgumentException("Ingresa un correo electrónico válido.");
 }
-record ConnectionInput(string Server, string Database, string Username, string Password, string? FailoverPartner);
+
+static ClaimsPrincipal AuthenticatedPrincipal(Dictionary<string, object?> row) {
+    if (!row.TryGetValue("ClaveVersion", out var rawVersion)
+        || rawVersion is null
+        || !int.TryParse(Convert.ToString(rawVersion, CultureInfo.InvariantCulture), NumberStyles.Integer, CultureInfo.InvariantCulture, out var version)
+        || version < 0) {
+        throw new InvalidOperationException("La base no devolvió ClaveVersion en el resultado de autenticación.");
+    }
+
+    var claims = new[] {
+        new Claim(ClaimTypes.NameIdentifier, Convert.ToString(row["IdUsuario"])!),
+        new Claim(ClaimTypes.Name, Convert.ToString(row["NombreUsuario"])!),
+        new Claim(ClaimTypes.Role, Convert.ToString(row["TipoUsuario"])!),
+        new Claim(ClaimTypes.SerialNumber, version.ToString(CultureInfo.InvariantCulture))
+    };
+    return new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+}
+
+static IResult RegisterRateLimited(HttpContext ctx, string key) {
+    var seconds = LimitesCorreo.SegundosRestantes(key);
+    if (seconds < 1) seconds = 1;
+    ctx.Response.Headers["Retry-After"] = seconds.ToString(CultureInfo.InvariantCulture);
+    return Results.Json(new {
+        error = "Demasiadas solicitudes. Espera antes de intentar registrarte nuevamente.",
+        retryAfterSegundos = seconds
+    }, statusCode: StatusCodes.Status429TooManyRequests);
+}
+
+static IResult LoginRateLimited(HttpContext ctx, string key) {
+    var seconds = LimitesCorreo.SegundosRestantes(key);
+    if (seconds < 1) seconds = 1;
+    ctx.Response.Headers["Retry-After"] = seconds.ToString(CultureInfo.InvariantCulture);
+    return Results.Json(new {
+        error = "Demasiados intentos de inicio de sesión. Espera antes de intentar nuevamente.",
+        retryAfterSegundos = seconds
+    }, statusCode: StatusCodes.Status429TooManyRequests);
+}
+record ConnectionInput(string Server, string Database, string Username, string Password);
 record LoginInput(string Username, string Password);
 record ProfileInput(string Name, string LastName, string Phone, string Email);
 record ClientInput(string Identity, string Name, string LastName, string Phone, string Email, string? Address);
 record FirstAccountInput(string Identity, string Name, string LastName, string Phone, string Email, string Username, string Password);
+record RegisterInput(string Identity, string Name, string LastName, string Phone, string Email, string? Address, string Username, string Password);
 record QueryResult(List<Dictionary<string, object?>> Rows, string Server, string DatabaseName, DateTimeOffset CheckedAt);
 
 sealed class Database {
@@ -132,12 +222,44 @@ sealed class Database {
     private string? connectionString;
     private readonly SemaphoreSlim setupLock = new(1, 1);
     public bool Configured => !string.IsNullOrEmpty(connectionString);
-    internal string? MonitoringConnection => connectionString;
+    public async Task<int?> GetActiveCredentialVersion(int idUsuario) {
+        if (idUsuario <= 0 || !Configured) return null;
+
+        using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+        using var command = new SqlCommand("SELECT ClaveVersion FROM dbo.Usuarios WHERE IdUsuario=@IdUsuario AND Activo=1", connection);
+        command.Parameters.Add(new SqlParameter("@IdUsuario", SqlDbType.Int) { Value = idUsuario });
+        var value = await command.ExecuteScalarAsync();
+        return value is null || value is DBNull ? null : Convert.ToInt32(value, CultureInfo.InvariantCulture);
+    }
     public async Task<bool> HasFeatures() {
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
         using var command = new SqlCommand("SELECT COUNT(*) FROM sys.procedures WHERE schema_id=SCHEMA_ID('dbo') AND name IN ('app_ExigirAdministrador','app_BuscarServicios','app_GuardarServicio','app_CrearPedido','app_BuscarPedidos','app_DetallePedido','app_CambiarEstadoPedido','app_Preferencias','app_GuardarPreferencias','app_Credencial','app_GuardarClave','app_CrearCuentaCliente','app_ActualizarCliente','app_CambiarEstadoCliente','app_EliminarClienteSeguro')",connection);
         return Convert.ToInt32(await command.ExecuteScalarAsync()) == 15;
+    }
+    public async Task<bool> HasCorreo() {
+        using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+        using var command = new SqlCommand(@"
+SELECT CONVERT(bit, CASE WHEN
+    (SELECT COUNT(*) FROM sys.procedures
+     WHERE schema_id = SCHEMA_ID('dbo')
+       AND name IN ('app_CorreoEstado','app_CrearTokenCorreo','app_SolicitarRecuperacion','app_ConfirmarCorreo','app_RestablecerClave')) = 5
+    AND OBJECT_ID('dbo.Usuarios', 'U') IS NOT NULL
+    AND COL_LENGTH('dbo.Usuarios', 'EmailVerificado') IS NOT NULL
+    AND COL_LENGTH('dbo.Usuarios', 'EmailVerificadoEn') IS NOT NULL
+    AND OBJECT_ID('dbo.TokensCorreo', 'U') IS NOT NULL
+    AND (SELECT COUNT(*) FROM sys.columns
+         WHERE object_id = OBJECT_ID('dbo.TokensCorreo')
+           AND name IN ('CodigoHash','EmailDestino','ExpiraEn','Intentos','UsadoEn')) = 5
+    AND EXISTS (SELECT 1 FROM sys.indexes
+                WHERE object_id = OBJECT_ID('dbo.TokensCorreo')
+                  AND name = 'UX_TokensCorreo_Activo'
+                  AND is_unique = 1
+                  AND has_filter = 1)
+    THEN 1 ELSE 0 END)", connection);
+        return Convert.ToBoolean(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
     }
     public Database(IWebHostEnvironment env) {
         configPath = Path.Combine(env.ContentRootPath, "Data", "connection.dpapi");
@@ -149,7 +271,6 @@ sealed class Database {
             if (Configured) throw new InvalidOperationException("La conexión ya está configurada.");
             Required(input.Server, "Servidor", 200); Required(input.Database, "Base de datos", 128); Required(input.Username, "Usuario SQL", 128); Required(input.Password, "Contraseña SQL", 255);
             var cs = new SqlConnectionStringBuilder { DataSource = input.Server.Trim(), InitialCatalog = input.Database.Trim(), UserID = input.Username.Trim(), Password = input.Password, TrustServerCertificate = true, Encrypt = true, ConnectTimeout = 8, ApplicationName = "LavaFacil", PersistSecurityInfo = false };
-            if (!string.IsNullOrWhiteSpace(input.FailoverPartner)) cs.FailoverPartner = input.FailoverPartner.Trim();
             using var connection = new SqlConnection(cs.ConnectionString);
             await connection.OpenAsync();
             using var command = new SqlCommand("SELECT COUNT(*) FROM sys.procedures WHERE name IN ('usp_ValidarLogin','app_Autorizar','app_Resumen','app_ConsultarServicios','app_ConsultarClientes','app_ConsultarPerfil','app_ActualizarPerfil','app_RegistrarCliente','app_EstadoInicial','app_CrearAdministradorInicial') AND schema_id=SCHEMA_ID('dbo')", connection);

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LavaFácil · Gestión de lavandería</title><link rel="icon" href="/logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/features.css"><script defer src="/app.js"></script><script defer src="/features.js"></script></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LavaFácil · Gestión de lavandería</title><link rel="icon" href="/logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/features.css"><script defer src="/app.js"></script><script defer src="/features.js"></script><script defer src="/correo.js"></script></head>
 <body>
 <div id="loading" class="loading">Preparando LavaFácil…</div>
 <div id="toast" class="toast" role="status" hidden></div>
@@ -9,8 +9,7 @@
   <nav aria-label="Navegación principal"><a href="#home" data-route="home">Inicio</a><a href="#services" data-route="services">Servicios</a><a href="#orders" data-route="orders" id="orders-nav">Pedidos</a><a href="#clients" data-route="clients" id="clients-nav">Clientes</a><a href="#profile" data-route="profile">Mi perfil</a></nav>
   <div class="account"><a href="#profile" class="profile-link" title="Ver y editar mi perfil"><span id="avatar" class="avatar">—</span><span><strong id="account-name"></strong><small id="account-role"></small></span></a><button id="logout" class="button light small">Cerrar sesión</button></div>
 </header>
-<section id="monitor" aria-label="Estado de servidores" hidden></section>
-<script defer src="/monitor.js"></script>
+<div id="mail-banner" class="notice mail-banner" role="status" aria-live="polite" hidden></div>
 <main id="app" hidden></main>
 <template id="login-template">
   <div class="auth-shell"><div class="bubbles" aria-hidden="true"></div><section class="auth-card card">
@@ -19,8 +18,25 @@
     <form id="login-form"><label>Usuario<input name="username" maxlength="50" placeholder="Tu nombre de usuario" autocomplete="username" required></label>
     <label>Contraseña<span class="password-field"><input name="password" type="password" maxlength="255" placeholder="Tu contraseña" autocomplete="current-password" required><button type="button" class="eye" aria-label="Mostrar contraseña" aria-pressed="false">◉</button></span></label>
     <div class="form-error" role="alert" hidden></div><button class="button primary wide" type="submit">Iniciar sesión <span aria-hidden="true">→</span></button></form>
+    <a href="#recuperar" id="forgot-link" class="mail-link" hidden>¿Olvidaste tu contraseña?</a>
+    <a href="#registro" id="register-cta" class="button mint wide">¿No tienes cuenta? Crea una</a>
     <p class="auth-foot">Ingresa con tu cuenta de cliente o empleado</p>
   </section></div>
+</template>
+<template id="signup-template">
+  <div class="setup-shell"><section class="card setup-card"><div class="brand auth-brand"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></div><h1>Crea tu cuenta de cliente</h1><p class="muted">Completa tus datos y podrás solicitar servicios de lavandería al instante.</p>
+  <form id="signup-form" class="form-grid">
+  <label>Cédula<input name="identity" maxlength="20" placeholder="Ej: 1-1234-5678" required></label>
+  <label>Nombre<input name="name" maxlength="50" placeholder="Ingrese el nombre" required></label>
+  <label>Apellidos<input name="lastName" maxlength="100" placeholder="Ingrese los apellidos" required></label>
+  <label>Teléfono<input name="phone" type="tel" maxlength="20" placeholder="Ej: 8888-8888" required></label>
+  <label>Correo electrónico<input name="email" type="email" maxlength="150" placeholder="ejemplo@correo.com" autocomplete="email" required></label>
+  <label>Dirección (opcional)<input name="address" maxlength="250" placeholder="Dirección detallada"></label>
+  <label>Nombre de usuario<input name="username" maxlength="50" placeholder="Ej: ramses" autocomplete="username" required></label>
+  <label>Contraseña<span class="password-field"><input name="password" type="password" minlength="10" maxlength="255" autocomplete="new-password" required><button type="button" class="eye" aria-label="Mostrar contraseña" aria-pressed="false">◉</button></span><small>Al menos 10 caracteres.</small></label>
+  <label>Confirmar contraseña<span class="password-field"><input name="confirmPassword" type="password" minlength="10" maxlength="255" autocomplete="new-password" required><button type="button" class="eye" aria-label="Mostrar contraseña" aria-pressed="false">◉</button></span></label>
+  <div class="form-error full" role="alert" hidden></div><div class="form-actions full"><button class="button primary" type="submit">Crear mi cuenta</button><a href="#login" class="button light">Volver a iniciar sesión</a></div>
+  </form></section></div>
 </template>
 <template id="setup-template">
   <div class="setup-shell"><section class="card setup-card"><div class="brand auth-brand"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></div><h1>Conectemos tu servidor</h1><p class="muted">Solo necesitas configurar esto una vez en tu laptop.</p>
@@ -30,8 +46,47 @@
   <label>Base de datos<input name="database" value="LavaFacil" maxlength="128" required></label>
   <label>Usuario de SQL Server<input name="username" value="ramses_proyecto" maxlength="128" autocomplete="username" required></label>
   <label>Contraseña del usuario SQL<span class="password-field"><input name="password" type="password" maxlength="255" autocomplete="current-password" required><button type="button" class="eye" aria-label="Mostrar contraseña" aria-pressed="false">◉</button></span></label>
-  <label class="full">Servidor compañero (opcional)<input name="failoverPartner" placeholder="100.117.134.120,56640" maxlength="200"><small>Dirección del otro servidor SQL, cuando Mirroring esté configurado. No uses el puerto 5022.</small></label>
   <div class="form-error full" role="alert" hidden></div><div class="form-actions full"><button class="button primary" type="submit">Verificar y guardar conexión</button></div>
   </form><p class="auth-foot">La contraseña se guarda cifrada con Windows, no en el código.</p></section></div>
+</template>
+<template id="verify-template">
+  <div class="auth-shell"><div class="bubbles" aria-hidden="true"></div><section class="auth-card card mail-card">
+    <div class="brand auth-brand"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></div>
+    <h1 class="mail-title">Verifica tu correo</h1>
+    <p class="muted">Enviamos un código de 6 dígitos a <strong id="verify-email">tu correo</strong>.</p>
+    <form id="verify-form">
+      <label>Código de verificación<input id="verify-code" class="code-input" name="codigo" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" aria-describedby="verify-help" placeholder="000000" required></label>
+      <p id="verify-help" class="mail-help">Escríbelo tal como aparece en el mensaje. Cada código vence a los 30 minutos.</p>
+      <div class="form-error" role="alert" hidden></div>
+      <button class="button primary wide" type="submit">Confirmar</button>
+      <button class="button light wide" type="button" id="verify-resend">Reenviar código</button>
+      <p id="verify-status" class="mail-help" role="status" aria-live="polite"></p>
+    </form>
+    <a href="#home" class="mail-link">Volver</a>
+  </section></div>
+</template>
+<template id="recover-template">
+  <div class="auth-shell"><div class="bubbles" aria-hidden="true"></div><section class="auth-card card mail-card">
+    <div class="brand auth-brand"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></div>
+    <h1 class="mail-title">Recupera tu contraseña</h1>
+    <p class="muted">Te enviaremos un código para que puedas crear una nueva contraseña.</p>
+    <form id="recover-form">
+      <div class="form-error" role="alert" hidden></div>
+      <div id="recover-step1" class="mail-steps">
+        <label>Usuario o correo electrónico<input id="recover-id" name="identificador" maxlength="150" autocomplete="username" placeholder="Ej: ramses o ramses@correo.com" required></label>
+        <p class="mail-help">Si la cuenta existe, enviaremos un código de 6 dígitos a su correo registrado.</p>
+        <button class="button primary wide" type="submit" id="recover-send">Enviar código</button>
+      </div>
+      <div id="recover-step2" class="mail-steps" hidden>
+        <p id="recover-message" class="notice" role="status"></p>
+        <label>Código de recuperación<input id="recover-code" class="code-input" name="codigo" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" aria-describedby="recover-code-help" placeholder="000000" required></label>
+        <p id="recover-code-help" class="mail-help">Revisa tu correo. El código vence en 10 minutos.</p>
+        <label>Nueva contraseña<span class="password-field"><input id="recover-password" name="nuevaClave" type="password" minlength="10" maxlength="255" autocomplete="new-password" required><button type="button" class="eye" aria-label="Mostrar contraseña" aria-pressed="false">◉</button></span><small>Al menos 10 caracteres.</small></label>
+        <label>Confirmar contraseña<span class="password-field"><input id="recover-confirm" name="confirmarClave" type="password" minlength="10" maxlength="255" autocomplete="new-password" required><button type="button" class="eye" aria-label="Mostrar contraseña" aria-pressed="false">◉</button></span></label>
+        <button class="button primary wide" type="submit" id="recover-reset">Restablecer contraseña</button>
+      </div>
+    </form>
+    <a href="#login" class="mail-link">Volver al inicio de sesión</a>
+  </section></div>
 </template>
 </body></html>

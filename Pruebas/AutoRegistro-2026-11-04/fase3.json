@@ -1,0 +1,67 @@
+﻿[
+    {
+        "Prueba":  "SQL-3.1 registro valido -\u003e IdUsuario/IdCliente",
+        "Estado":  "PASS",
+        "Evidencia":  "IdUsuario=1017, IdCliente=3015"
+    },
+    {
+        "Prueba":  "SQL-3.2 TipoUsuario=Cliente y Activo=1",
+        "Estado":  "PASS",
+        "Evidencia":  "TipoUsuario=Cliente, ActivoU=True, ActivoC=True"
+    },
+    {
+        "Prueba":  "SQL-3.2 ClaveHash = hash enviado (PBKDF2-SHA256$210000$...), Clave GUID distinta",
+        "Estado":  "PASS",
+        "Evidencia":  "hashOk=True, guidOk=True, fugas=0"
+    },
+    {
+        "Prueba":  "SQL-3.3 cedula duplicada -\u003e 50103",
+        "Estado":  "PASS",
+        "Evidencia":  "num=50103"
+    },
+    {
+        "Prueba":  "SQL-3.3 correo duplicado -\u003e 50103",
+        "Estado":  "PASS",
+        "Evidencia":  "num=50103"
+    },
+    {
+        "Prueba":  "SQL-3.3 usuario duplicado (activo) -\u003e 50103",
+        "Estado":  "PASS",
+        "Evidencia":  "num=50103"
+    },
+    {
+        "Prueba":  "SQL-3.3 usuario desactivado -\u003e 50103",
+        "Estado":  "PASS",
+        "Evidencia":  "num=50103"
+    },
+    {
+        "Prueba":  "SQL-3.4 los 4 mensajes 50103 son IDENTICOS byte a byte entre si y con el del script",
+        "Estado":  "PASS",
+        "Evidencia":  "usuarioActivo=IGUAL, cedula=IGUAL, correo=IGUAL, usuarioInactivo=IGUAL | longitud=110"
+    },
+    {
+        "Prueba":  "SQL-3.5 obligatorio vacio -\u003e 50101 con el mismo mensaje",
+        "Estado":  "PASS",
+        "Evidencia":  "num=50101, coincide=True"
+    },
+    {
+        "Prueba":  "SQL-3.5 Hash sin prefijo PBKDF2-SHA256 -\u003e 50101 con el mismo mensaje",
+        "Estado":  "PASS",
+        "Evidencia":  "num=50101, coincide=True"
+    },
+    {
+        "Prueba":  "SQL-3.6 atomicidad: 0 filas nuevas tras los 6 fallos",
+        "Estado":  "PASS",
+        "Evidencia":  "Clientes=0, Usuarios=0"
+    },
+    {
+        "Prueba":  "SQL-3.6 una sola fila por el registro valido",
+        "Estado":  "PASS",
+        "Evidencia":  "Clientes=1, Usuarios=1"
+    },
+    {
+        "Prueba":  "SQL-3.7 limpieza confirmada (0 filas de prueba)",
+        "Estado":  "PASS",
+        "Evidencia":  "Usuarios=0, Clientes=0"
+    }
+]

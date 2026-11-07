@@ -1,0 +1,1 @@
+mutation { insertarCliente(cedula: "QAF-C-20261107011447940" nombre: "QA" apellidos: "Focalizado" telefono: "5551234567" email: "[redacted]" direccion: "Temporal") { exito mensaje } }

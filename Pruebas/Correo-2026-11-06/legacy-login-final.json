@@ -1,0 +1,5 @@
+{
+    "status":  200,
+    "body":  "{\"user\":{\"id\":1046,\"name\":\"autotest.legacy.20261106235607\",\"role\":\"Cliente\"},\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\"}",
+    "username":  "autotest.legacy.20261106235607"
+}

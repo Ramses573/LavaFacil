@@ -1,0 +1,72 @@
+﻿[
+    {
+        "prueba":  "bootstrap mailReady y correoConfigurado con outbox",
+        "estado":  "PASS",
+        "detalle":  "status=200; mailReady=True; correoConfigurado=True"
+    },
+    {
+        "prueba":  "registro cuenta correo 1",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "GET estado correo autenticado",
+        "estado":  "PASS",
+        "detalle":  "status=200; configurado=True"
+    },
+    {
+        "prueba":  "enviar verificacion crea EML y codigo solo cuerpo outbox",
+        "estado":  "PASS",
+        "detalle":  "status=200; emlIncremento=1; codigoExtraidoDelCuerpo=True"
+    },
+    {
+        "prueba":  "EML verificacion no expone OTP en header ni Subject",
+        "estado":  "PASS",
+        "detalle":  "sinHeader=True; sinOtpSubject=True"
+    },
+    {
+        "prueba":  "confirmar verificacion correcta",
+        "estado":  "PASS",
+        "detalle":  "status=200; verificado=True"
+    },
+    {
+        "prueba":  "registro cuenta correo 2 para prueba token invalido",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "codigo incorrecto persiste intentos y quema token",
+        "estado":  "PASS",
+        "detalle":  "statuses=400,400,400,400,400; intentosRestantes=0"
+    },
+    {
+        "prueba":  "login cuenta correo 1",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "recuperacion no enumera existente/inexistente",
+        "estado":  "PASS",
+        "detalle":  "existente=200; inexistente=200; cuerpoIdentico=True"
+    },
+    {
+        "prueba":  "seleccionar EML nuevo de recuperacion por To y proposito",
+        "estado":  "PASS",
+        "detalle":  "candidatos=1; to=autotest.correo.20261107000556.1@example.com; proposito=recuperacion; codigoExtraidoDelCuerpo=True"
+    },
+    {
+        "prueba":  "EML recuperacion no expone OTP en header ni Subject",
+        "estado":  "PASS",
+        "detalle":  "sinHeader=True; sinOtpSubject=True"
+    },
+    {
+        "prueba":  "restablecer clave con codigo outbox",
+        "estado":  "PASS",
+        "detalle":  "status=200; cuerpo={\"message\":\"Contraseña actualizada. Inicia sesión con tu nueva contraseña.\"}"
+    },
+    {
+        "prueba":  "login con nueva clave",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    }
+]

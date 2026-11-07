@@ -1,0 +1,3 @@
+[{"IdPedido":18,"Tipo":"PedidoCreado","Estado":"Enviado","Intentos":0,"Destino":"autopedido20261107011536@example.com","DatosJson":"{\"IdPedido\":18,\"Estado\":\"Pendiente\",\"FechaPedido\":\"2026-11-06T19:15:37.217\",\"Total\":6000.00,\"Observaciones\":\"
+
+(1 rows affected)

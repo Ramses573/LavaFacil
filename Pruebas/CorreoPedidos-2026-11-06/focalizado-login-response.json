@@ -1,0 +1,9 @@
+{
+    "data":  {
+                 "login":  {
+                               "exito":  true,
+                               "mensaje":  "Inicio de sesión correcto.",
+                               "token":  "REDACTADO"
+                           }
+             }
+}

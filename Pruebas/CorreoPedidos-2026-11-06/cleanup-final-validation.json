@@ -1,0 +1,17 @@
+﻿{
+    "usuarios":  0,
+    "empleados":  0,
+    "pedidos":  0,
+    "detalle":  0,
+    "pagos":  0,
+    "correoEnvios":  0,
+    "eml":  0,
+    "procesos":  [
+
+                 ],
+    "puertos":  [
+
+                ],
+    "keysFiles":  1,
+    "connectionDpapi":  "preservado/no tocado"
+}

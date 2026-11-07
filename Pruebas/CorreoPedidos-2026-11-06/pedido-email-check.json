@@ -1,0 +1,5 @@
+{
+    "prueba":  "un EML PedidoCreado con HTML y texto",
+    "estado":  "FAIL",
+    "detalle":  "emlTotal=2;pedidoEml=1;html=True;texto=True;monto=True;detalle=True;envio=PedidoCreado|Enviado|0|autopedido20261107004519@example.com  (1 rows affected).Trim()"
+}

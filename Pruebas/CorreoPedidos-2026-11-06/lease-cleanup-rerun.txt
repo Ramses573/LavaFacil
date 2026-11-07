@@ -1,0 +1,7 @@
+
+(1 rows affected)
+RemainingLeaseQA
+----------------
+               0
+
+(1 rows affected)

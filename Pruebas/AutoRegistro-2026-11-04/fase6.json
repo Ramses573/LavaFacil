@@ -1,0 +1,42 @@
+﻿[
+    {
+        "Prueba":  "UI-5.1 CTA #register-cta servido despues del boton de login y antes de .auth-foot",
+        "Estado":  "PASS",
+        "Evidencia":  "btn=2208, cta=2301, authFoot=2385"
+    },
+    {
+        "Prueba":  "UI-5.1 #signup-template completo (abierto/cerrado y con todos los campos)",
+        "Estado":  "PASS",
+        "Evidencia":  "abierto=True, cerrado=True, campos faltantes=ninguno"
+    },
+    {
+        "Prueba":  "UI-5.1 app.js servido contiene showSignup, request(register, rama routeName==registro",
+        "Estado":  "PASS",
+        "Evidencia":  "showSignup=True, request(register=True, routeName=True"
+    },
+    {
+        "Prueba":  "UI-5.1 app.js liga el CTA a featuresReady (cta.hidden = !state.featuresReady)",
+        "Estado":  "PASS",
+        "Evidencia":  "presente=True"
+    },
+    {
+        "Prueba":  "UI-5.1 node --check del app.js servido",
+        "Estado":  "PASS",
+        "Evidencia":  "node --check exit=0 sin salida (OK)"
+    },
+    {
+        "Prueba":  "UI-5.2 GET /monitor.js -\u003e 404",
+        "Estado":  "PASS",
+        "Evidencia":  "status=404"
+    },
+    {
+        "Prueba":  "UI-5.2 GET / no menciona mirroring",
+        "Estado":  "PASS",
+        "Evidencia":  "contiene mirroring=False"
+    },
+    {
+        "Prueba":  "UI-5.3 GET /api/health -\u003e 404",
+        "Estado":  "PASS",
+        "Evidencia":  "status=404"
+    }
+]

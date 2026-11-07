@@ -1,0 +1,5 @@
+qa_directo 0 0 0 0 0 0
+procesos LavaFacil: 0
+EML temporales: 0
+keys existentes: 1 (preservadas)
+connection.dpapi: preservado/no tocado

@@ -6,6 +6,13 @@
 *.user
 *.log
 
+# Artefactos de ejecución de las pruebas (PIDs y salidas de error)
+*.pid
+*.err
+
+# Builds locales generados dentro de las carpetas de evidencias
+Pruebas/**/lavafacil-mail-build/
+
 # Credenciales, exportaciones privadas y respaldos de SQL Server
 *.dpapi*
 *.bak
@@ -16,6 +23,7 @@
 *.p12
 *.pvk
 *.key
+keys/
 .env
 .env.*
 !.env.example

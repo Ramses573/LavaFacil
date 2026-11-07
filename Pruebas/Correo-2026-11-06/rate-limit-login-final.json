@@ -1,0 +1,38 @@
+[
+    {
+        "n":  1,
+        "status":  429,
+        "body":  "{\"error\":\"Demasiados intentos de inicio de sesión. Espera antes de intentar nuevamente.\",\"retryAfterSegundos\":594}",
+        "retryAfter":  "594"
+    },
+    {
+        "n":  2,
+        "status":  429,
+        "body":  "{\"error\":\"Demasiados intentos de inicio de sesión. Espera antes de intentar nuevamente.\",\"retryAfterSegundos\":594}",
+        "retryAfter":  "594"
+    },
+    {
+        "n":  3,
+        "status":  429,
+        "body":  "{\"error\":\"Demasiados intentos de inicio de sesión. Espera antes de intentar nuevamente.\",\"retryAfterSegundos\":594}",
+        "retryAfter":  "594"
+    },
+    {
+        "n":  4,
+        "status":  429,
+        "body":  "{\"error\":\"Demasiados intentos de inicio de sesión. Espera antes de intentar nuevamente.\",\"retryAfterSegundos\":594}",
+        "retryAfter":  "594"
+    },
+    {
+        "n":  5,
+        "status":  429,
+        "body":  "{\"error\":\"Demasiados intentos de inicio de sesión. Espera antes de intentar nuevamente.\",\"retryAfterSegundos\":594}",
+        "retryAfter":  "594"
+    },
+    {
+        "n":  6,
+        "status":  429,
+        "body":  "{\"error\":\"Demasiados intentos de inicio de sesión. Espera antes de intentar nuevamente.\",\"retryAfterSegundos\":594}",
+        "retryAfter":  "594"
+    }
+]

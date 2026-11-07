@@ -1,0 +1,12 @@
+Observación capturada durante la ejecución real antes de la limpieza:
+- Pedido: 6
+- Destino: autopedido20261107004519@example.com
+- Tipo de cola: PedidoCreado
+- Estado: Enviado
+- Intentos: 0
+- EML de pedido durante esa ejecución: 1
+- Multipart: text/plain y text/html
+- Campos presentes: Pedido, Detalle, Monto, Estado
+- Secretos observados: ninguno
+
+El archivo .eml temporal fue eliminado como parte de la limpieza aprobada.

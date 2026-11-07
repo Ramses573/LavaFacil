@@ -1,0 +1,18 @@
+[
+    {
+        "archivo":  "actualizar-pago-focalizado.ps1",
+        "errores":  0
+    },
+    {
+        "archivo":  "otp-pago-real.ps1",
+        "errores":  0
+    },
+    {
+        "archivo":  "pago-real.ps1",
+        "errores":  0
+    },
+    {
+        "archivo":  "run-order.ps1",
+        "errores":  0
+    }
+]

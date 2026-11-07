@@ -1,0 +1,1 @@
+{"query":"mutation { actualizarPago(idPago:1,idPedido:1,monto:1.00,metodoPago:\"Prueba\",estadoPago:\"Pagado\",referencia:\"QA\") { exito mensaje } }"}

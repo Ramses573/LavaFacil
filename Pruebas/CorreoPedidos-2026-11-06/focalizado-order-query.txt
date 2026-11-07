@@ -1,0 +1,1 @@
+mutation { insertarPedido(idCliente: 3084 fechaEntregaEstimada: "2026-11-10T12:00:00Z" estado: "Pendiente" total: 123.45 observaciones: "QA-FOCAL-20261107011447940") { exito mensaje } }

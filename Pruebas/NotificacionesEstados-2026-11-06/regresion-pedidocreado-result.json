@@ -1,0 +1,32 @@
+﻿[
+    {
+        "prueba":  "login admin regresion pedido creado",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "catalogo servicios regresion",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "servicio activo disponible regresion",
+        "estado":  "PASS",
+        "detalle":  "servicio=6"
+    },
+    {
+        "prueba":  "crear pedido regresion PedidoCreado",
+        "estado":  "PASS",
+        "detalle":  "status=200; body={\"rows\":[{\"IdPedido\":47,\"Total\":6000.00,\"Estado\":\"Pendiente\"}],\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\",\"checkedAt\":\"2026-11-06T21:09:30.9354232-06:00\"}"
+    },
+    {
+        "prueba":  "EML PedidoCreado unico mensaje",
+        "estado":  "PASS",
+        "detalle":  "eml=1"
+    },
+    {
+        "prueba":  "CorreoEnvios PedidoCreado Enviado",
+        "estado":  "PASS",
+        "detalle":  "data=[{\"IdPedido\":47,\"Tipo\":\"PedidoCreado\",\"Estado\":\"Enviado\",\"Intentos\":0,\"Destino\":\"QA-ESTADOS-FA491486-BF18-498B-9C53-6DF06AB577A5@example.test\",\"DatosJson\":\"{\\\"IdPedido\\\":47,\\\"Estado\\\":\\\"Pendiente\\\",\\\"FechaPedido\\\":\\\"2026-11-06T21:09:30.933\\\",\\\"Total\\\":6000\r\n"
+    }
+]

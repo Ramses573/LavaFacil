@@ -1,0 +1,32 @@
+[
+    {
+        "prueba":  "bootstrap",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "registro cliente prueba",
+        "estado":  "PASS",
+        "detalle":  "status=200"
+    },
+    {
+        "prueba":  "catalogo servicio",
+        "estado":  "PASS",
+        "detalle":  "status=200; servicio=6"
+    },
+    {
+        "prueba":  "crear pedido flujo web",
+        "estado":  "PASS",
+        "detalle":  "status=200; body={\"rows\":[{\"IdPedido\":18,\"Total\":6000.00,\"Estado\":\"Pendiente\"}],\"server\":\"MADRENZO\",\"databaseName\":\"LavaFacil\",\"checkedAt\":\"2026-11-06T19:15:37.2274172-06:00\"}"
+    },
+    {
+        "prueba":  "un EML PedidoCreado con HTML y texto",
+        "estado":  "FAIL",
+        "detalle":  "emlCount=0; html=False; texto=False; monto=False; detalle=False; secretos=False"
+    },
+    {
+        "prueba":  "CorreoEnvios PedidoCreado Enviado",
+        "estado":  "PASS",
+        "detalle":  "pedido=18; [{\"IdPedido\":18,\"Tipo\":\"PedidoCreado\",\"Estado\":\"Enviado\",\"Intentos\":0,\"Destino\":\"autopedido20261107011536@example.com\",\"DatosJson\":\"{\\\"IdPedido\\\":18,\\\"Estado\\\":\\\"Pendiente\\\",\\\"FechaPedido\\\":\\\"2026-11-06T19:15:37.217\\\",\\\"Total\\\":6000.00,\\\"Observaciones\\\":\\\"\r\n\r\n(1 rows affected)\r\n"
+    }
+]

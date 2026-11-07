@@ -19,9 +19,14 @@ try {
     $check.CommandText = "SELECT @@SERVERNAME AS Servidor,DB_NAME() AS BaseDatos,mirroring_role_desc AS Rol FROM sys.database_mirroring WHERE database_id=DB_ID();"
     $table = New-Object System.Data.DataTable
     $table.Load($check.ExecuteReader())
+    $rol = if ($table.Rows.Count -eq 1) { $table.Rows[0].Rol } else { $null }
+    # Rol de mirroring: NULL = sin mirroring configurado (rol no aplicable, se acepta);
+    # 'PRINCIPAL' = principal con espejo (se acepta, como hasta ahora);
+    # 'MIRROR' u otro valor se rechaza para no aplicar la actualización sobre la copia espejo.
+    $rolAceptado = ($null -eq $rol -or [DBNull]::Value -eq $rol -or [string]$rol -eq 'PRINCIPAL')
     if ($table.Rows.Count -ne 1 -or $table.Rows[0].BaseDatos -ne 'LavaFacil' -or
         $table.Rows[0].Servidor -notin @('MADRENZO','LAPTOP-D0TECCJR\LAVAFACIL2022') -or
-        $table.Rows[0].Rol -ne 'PRINCIPAL') {
+        -not $rolAceptado) {
         throw 'No se aplicó nada: la conexión no corresponde a LavaFacil en un principal conocido o faltan permisos para consultar su rol.'
     }
     Write-Output ('Servidor principal confirmado: ' + $table.Rows[0].Servidor)
