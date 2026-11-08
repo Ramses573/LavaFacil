@@ -1,0 +1,35 @@
+From: LavaFacil <no-reply@lavafacil.local>
+To: ana@example.com
+Subject: LavaFácil · Confirma tu correo
+Date: Sat, 07 Nov 2026 06:24:39 GMT
+Message-ID: <0d6e10a77d4b48e9a8dcd3d0f2554142@lavafacil.local>
+MIME-Version: 1.0
+X-LavaFacil-Proposito: verificacion
+Content-Type: multipart/alternative; boundary="lavafacil-cfb29b6c931d41bfbd4d7ad87cbab64f"
+
+--lavafacil-cfb29b6c931d41bfbd4d7ad87cbab64f
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hola, Ana:
+
+Usa este código para confirmar tu correo electrónico en LavaFácil:
+Codigo: 123456
+
+El código vence en 10 minutos. Si no solicitaste este mensaje, ignóralo.
+
+LavaFácil
+--lavafacil-cfb29b6c931d41bfbd4d7ad87cbab64f
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<div style="margin:0;padding:24px;background:#f4f6f8;font-family:Segoe UI,Arial,sans-serif;color:#1f2937;">
+  <div style="max-width:480px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:28px;">
+    <div style="font-size:18px;font-weight:700;color:#0f766e;margin-bottom:16px;">LavaFácil</div>
+    <p style="margin:0 0 12px;font-size:15px;line-height:1.5;">Hola, Ana:</p>
+    <p style="margin:0 0 18px;font-size:15px;line-height:1.5;">Usa este código para confirmar tu correo electrónico:</p>
+    <div style="font-family:Consolas,Menlo,monospace;font-size:34px;font-weight:700;letter-spacing:10px;text-align:center;padding:16px;background:#f0fdfa;border:1px dashed #0f766e;border-radius:10px;color:#0f172a;">123456</div>
+    <p style="margin:18px 0 0;font-size:14px;line-height:1.5;color:#475569;">El código vence en 10 minutos. Si no solicitaste este mensaje, ignóralo.</p>
+  </div>
+</div>
+--lavafacil-cfb29b6c931d41bfbd4d7ad87cbab64f--

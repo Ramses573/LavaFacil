@@ -13,6 +13,7 @@ static class LimitesCorreo
         public DateTime Inicio;
         public int Conteo;
         public DateTime Fin;
+        public int Maximo;
     }
 
     static readonly ConcurrentDictionary<string, Estado> estados = new(StringComparer.Ordinal);
@@ -45,7 +46,7 @@ static class LimitesCorreo
                     Purgar(ahora);
                     if (estados.Count >= MaximoEntradas) return false;
 
-                    estado = new Estado { Inicio = ahora, Fin = ahora + ventana };
+                    estado = new Estado { Inicio = ahora, Fin = ahora + ventana, Maximo = maximo };
                     estados.TryAdd(interno, estado);
                 }
             }
@@ -59,6 +60,7 @@ static class LimitesCorreo
                 estado.Inicio = ahora;
                 estado.Conteo = 0;
                 estado.Fin = ahora + ventana;
+                estado.Maximo = maximo;
             }
 
             if (estado.Conteo >= maximo)
@@ -102,6 +104,9 @@ static class LimitesCorreo
             int restante;
             lock (par.Value)
             {
+                // Solo cuentan las ventanas que realmente estan bloqueando:
+                // el horizonte de una ventana con cupo libre no es una espera real.
+                if (par.Value.Conteo < par.Value.Maximo) continue;
                 restante = (int)Math.Ceiling((par.Value.Fin - ahora).TotalSeconds);
             }
             if (restante > maximo) maximo = restante;

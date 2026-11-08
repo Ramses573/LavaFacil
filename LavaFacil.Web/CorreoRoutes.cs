@@ -1,10 +1,12 @@
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.Data.SqlClient;
 
 /// <summary>
-/// Rutas HTTP del modulo de correo: estado, verificacion y recuperacion de contrasena.
+/// Rutas HTTP del modulo de correo: estado, verificacion, recuperacion de contrasena y comprobantes PDF.
 /// El codigo de 6 digitos nunca se devuelve ni se registra.
 /// </summary>
 static class CorreoRoutes
@@ -121,7 +123,7 @@ static class CorreoRoutes
             });
         });
 
-        app.MapPost("/api/email/recuperacion/solicitar", async (IdentificadorCorreoInput input, HttpContext ctx, Database db, CorreoSmtp smtp) =>
+        app.MapPost("/api/email/recuperacion/solicitar", async (IdentificadorCorreoInput input, HttpContext ctx, Database db, CorreoSmtp smtp, ILoggerFactory logs) =>
         {
             if (!smtp.Configurado && !smtp.OutboxActivo)
                 return Results.Json(new { error = CorreoNoConfigurado }, statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -134,7 +136,7 @@ static class CorreoRoutes
             if (!LimitesCorreo.Permite(claveIdentificador, 1, TimeSpan.FromSeconds(60))
                 || !LimitesCorreo.Permite(claveIdentificador, 3, TimeSpan.FromHours(1))
                 || !LimitesCorreo.Permite(claveIp, 10, TimeSpan.FromHours(1)))
-                return Results.Ok(new { message = MensajeRecuperacion });
+                return Demasiado(ctx, claveIdentificador, claveIp);
 
             var codigo = CorreoTokens.GenerarCodigo();
             QueryResult resultado;
@@ -159,9 +161,14 @@ static class CorreoRoutes
                 return Results.Ok(new { message = MensajeRecuperacion });
 
             var envio = await smtp.EnviarCodigoAsync(destino, Texto(fila, "Nombre"), codigo, PropositoRecuperacion, 10, ctx.RequestAborted);
-            if (!envio.Enviado) LimitesCorreo.Liberar(claveIdentificador);
+            if (!envio.Enviado)
+            {
+                LimitesCorreo.Liberar(claveIdentificador);
+                logs.CreateLogger("CorreoRoutes").LogWarning("No se pudo enviar el correo de recuperación: {Error}", SanitizarError(envio.Error) ?? "sin detalle");
+                return Results.Json(new { enviado = false, message = MensajeEnvioFallido }, statusCode: StatusCodes.Status200OK);
+            }
 
-            return Results.Ok(new { message = MensajeRecuperacion });
+            return Results.Ok(new { enviado = true, message = MensajeRecuperacion });
         });
 
         app.MapPost("/api/email/recuperacion/restablecer", async (RestablecerCorreoInput input, HttpContext ctx, Database db) =>
@@ -186,6 +193,41 @@ static class CorreoRoutes
 
             return Results.Ok(new { message = MensajeRestablecido });
         });
+
+        /// <summary>
+        /// Sirve el comprobante PDF de un pedido directamente desde la app.
+        /// Requiere autenticación y que el pedido pertenezca al usuario logueado.
+        /// </summary>
+        authenticated.MapGet("/pedidos/{idPedido:int}/comprobante", async (int idPedido, HttpContext ctx, Database db) =>
+        {
+            // Obtener los datos del pedido (usa el mismo procedimiento que el worker de correo)
+            var resultado = await db.Call("app_DatosCorreoPedido", new[] {
+                Database.Id(ctx),
+                Database.Param("IdPedido", idPedido.ToString(), 10)
+            });
+
+            var fila = resultado.Rows.FirstOrDefault();
+            if (fila is null)
+                return Results.NotFound();
+
+            var datosJson = fila.TryGetValue("DatosJson", out var dv) && dv is string s ? s : "";
+            if (string.IsNullOrWhiteSpace(datosJson))
+                return Results.NotFound();
+
+            using var doc = JsonDocument.Parse(datosJson);
+            var root = doc.RootElement;
+
+            // Obtener el ID de pago (si existe) para el comprobante
+            int idPago = 0;
+            if (root.TryGetProperty("IdPago", out var pagoProp) && pagoProp.ValueKind == JsonValueKind.Number)
+                idPago = pagoProp.GetInt32();
+
+            // Generar el PDF con el mismo motor que el correo
+            if (!ComprobantePdf.TryCrear("PedidoCreado", root, idPedido, idPago, out var adjunto, out var error))
+                return Results.NotFound();
+
+            return Results.File(adjunto!.Contenido, "application/pdf", adjunto.NombreArchivo);
+        });
     }
 
     static int UsuarioId(HttpContext ctx) =>
@@ -201,6 +243,14 @@ static class CorreoRoutes
 
     static SqlParameter Hash(string nombre, byte[] valor) =>
         new(nombre, SqlDbType.VarBinary, 32) { Value = valor };
+
+    /// <summary>Recorta el detalle del fallo SMTP para el log: sin controles ni saltos de linea, maximo 200 caracteres.</summary>
+    static string? SanitizarError(string? error)
+    {
+        if (string.IsNullOrWhiteSpace(error)) return null;
+        var limpio = new string(error.Where(c => !char.IsControl(c)).ToArray()).Trim();
+        return limpio.Length > 200 ? limpio[..200] : limpio;
+    }
 
     static IResult Demasiado(HttpContext ctx, params string[] claves)
     {

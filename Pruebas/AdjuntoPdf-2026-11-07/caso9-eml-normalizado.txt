@@ -1,0 +1,20 @@
+From: LavaFacil <no-reply@lavafacil.local>
+To: cliente@example.com
+Subject: Asunto valido
+Date: Sat, 07 Nov 2026 06:24:39 GMT
+Message-ID: <0676bfeebc3448d98f00d39a94de65ae@lavafacil.local>
+MIME-Version: 1.0
+X-LavaFacil-Proposito: mensaje
+Content-Type: multipart/alternative; boundary="lavafacil-70bde85ef095496ab5813e15c6816bad"
+
+--lavafacil-70bde85ef095496ab5813e15c6816bad
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Texto
+--lavafacil-70bde85ef095496ab5813e15c6816bad
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<p>HTML</p>
+--lavafacil-70bde85ef095496ab5813e15c6816bad--

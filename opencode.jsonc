@@ -1,6 +1,54 @@
 {
   "$schema": "https://opencode.ai/config.json",
 
+  // Modelo por defecto: Stealth Crouton Alpha (gratis, 128k ctx, estable).
+  "model": "openrouter/crouton-alpha",
+
+  // Catálogo gratis de APIs (OpenRouter directo).
+  "providers": {
+    "openrouter": {
+      "name": "OpenRouter",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://openrouter.ai/api/v1"
+      },
+      "models": {
+        "crouton-alpha": {
+          "name": "Stealth Crouton Alpha (gratis, 128k ctx)",
+          "id": "stealth/crouton-alpha"
+        },
+        "flint-free": {
+          "name": "Recursive Flint (gratis)",
+          "id": "recursive/flint-v1.0:free"
+        },
+        "xing4-free": {
+          "name": "Xingchen Xing4.0 29B (gratis)",
+          "id": "xingchen-agi/xing4.0-29b-a4b:free"
+        },
+        "glm-flashx": {
+          "name": "Z.ai GLM 5.3 FlashX Legal (gratis)",
+          "id": "z-ai/glm-5.3-flashx-legal"
+        },
+        "deepseek-flash": {
+          "name": "DeepSeek V4.1 Flash (barato)",
+          "id": "deepseek/deepseek-v4.1-flash-1017"
+        },
+        "particle1": {
+          "name": "Particle AI Particle-1 (gratis)",
+          "id": "particle-ai/particle-1"
+        },
+        "nemotron-vl": {
+          "name": "NVIDIA Nemotron 3.5 Super VL (barato)",
+          "id": "nvidia/nemotron-3.5-super-vl"
+        },
+        "kimi-pro": {
+          "name": "Moonshot Kimi K3.1 Pro (barato)",
+          "id": "moonshotai/kimi-k3.1-pro"
+        }
+      }
+    }
+  },
+
   // =====================================================================
   // PRESET: Equipo de desarrollo de software
   // ---------------------------------------------------------------------

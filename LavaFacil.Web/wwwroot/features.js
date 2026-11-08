@@ -9,6 +9,37 @@ function applyPreferences(p) {
   const avatar = avatarSymbols[p.Avatar] || (state.profile?.Nombre || state.user?.name || '').slice(0,2).toUpperCase();
   document.querySelectorAll('.avatar').forEach(el=>el.textContent=avatar);
 }
+
+/* Comprobante PDF viewer */
+function viewComprobante(idPedido) {
+    const url = `pedidos/${idPedido}/comprobante`;
+    fetch(url)
+        .then(res => {
+            if (!res.ok) throw new Error('No se pudo obtener el comprobante');
+            return res.blob();
+        })
+        .then(blob => {
+            const objectURL = URL.createObjectURL(blob);
+            const iframe = document.getElementById(`pdf-frame-${idPedido}`);
+            if (iframe) iframe.src = objectURL;
+        })
+        .catch(err => {
+            document.getElementById('order-summary').textContent = `Error: ${err.message}`;
+            document.getElementById('order-summary').classList.add('error');
+        });
+
+    document.getElementById(`comprobante-${idPedido}`).classList.remove('hidden');
+    document.getElementById(`pdf-frame-${idPedido}`).src = '';
+    document.getElementById(`pdf-frame-${idPedido}`).style.display = 'block';
+    document.getElementById(`pdf-frame-${idPedido}`).style.height = '600px';
+    document.getElementById(`comprobante-${idPedido}`).classList.remove('hidden');
+    document.getElementById(`close-pdf-${idPedido}`).onclick = () => {
+        document.getElementById(`comprobante-${idPedido}`).classList.add('hidden');
+        document.getElementById(`pdf-frame-${idPedido}`).src = '';
+        document.getElementById(`pdf-frame-${idPedido}`).style.display = 'none';
+        document.getElementById(`pdf-frame-${idPedido}`).style.height = '0';
+    };
+}
 async function showCatalog(version) {
   page('Servicios de lavandería',isAdmin()?'Administra el catálogo y consulta sus tarifas':'Elige los servicios para tu próximo pedido',
     isAdmin()?'<button id="new-service" class="button primary">+ Agregar servicio</button>':'<a href="#new-order" class="button primary">Solicitar servicios</a>',
@@ -43,7 +74,11 @@ async function showOrders(version) {
     try{
       const result=await request('orders/'+id);if(version!==state.routeVersion)return;recordConnection(result);
       const r=result.rows[0];if(!r)throw new Error('Este pedido no tiene líneas para mostrar.');
-      $('#order-detail').innerHTML=`<section class="card order-detail"><div class="detail-heading"><div><h2>Pedido #${r.IdPedido}</h2><p>${escapeHtml(r.Cliente)} · ${escapeHtml(r.Estado)}</p></div><button id="close-detail" class="button light small">Cerrar detalle</button></div><p>${escapeHtml(r.Observaciones||'Sin observaciones')}</p><table><thead><tr><th>Servicio</th><th>Cantidad</th><th>Base</th><th>Adicional</th><th>Subtotal</th></tr></thead><tbody>${result.rows.map(d=>`<tr><td>${escapeHtml(d.NombreServicio)}</td><td>${d.Cantidad} ${escapeHtml(d.TipoCobro)}</td><td>${currency(d.PrecioBase)}</td><td>${currency(d.MontoAdicional)}</td><td>${currency(d.Subtotal)}</td></tr>`).join('')}</tbody></table><p class="order-total">Total: ${currency(r.Total)}</p>${isStaff()?`<form id="status-form" class="form-grid"><label>Estado del pedido<select name="status">${opts(orderStates,r.Estado)}</select></label><div class="form-actions"><button class="button primary" type="submit">Guardar estado</button></div><div class="form-error full" role="alert" hidden></div></form>`:''}</section>`;
+      const canViewPdf=r.Estado==='Listo'||r.Estado==='Entregado';
+      $('#order-detail').innerHTML=`<section class="card order-detail"><div class="detail-heading"><div><h2>Pedido #${r.IdPedido}</h2><p>${escapeHtml(r.Cliente)} · ${escapeHtml(r.Estado)}</p></div><button id="close-detail" class="button light small">Cerrar detalle</button>${canViewPdf?`<a href="#comprobante-${r.IdPedido}" class="button light small" id="view-pdf-${r.IdPedido}">Ver comprobante PDF</a>`:''}</div><p>${escapeHtml(r.Observaciones||'Sin observaciones')}</p><table><thead><tr><th>Servicio</th><th>Cantidad</th><th>Base</th><th>Adicional</th><th>Subtotal</th></tr></thead><tbody>${result.rows.map(d=>`<tr><td>${escapeHtml(d.NombreServicio)}</td><td>${d.Cantidad} ${escapeHtml(d.TipoCobro)}</td><td>${currency(d.PrecioBase)}</td><td>${currency(d.MontoAdicional)}</td><td>${currency(d.Subtotal)}</td></tr>`).join('')}</tbody></table><p class="order-total">Total: ${currency(r.Total)}</p>${canViewPdf?`<div id="comprobante-${r.IdPedido}" class="comprobante-wrapper" hidden><h3>Comprobante de pedido #${r.IdPedido}</h3><iframe id="pdf-frame-${r.IdPedido}" src="" width="100%" height="600px" style="border:1px solid #ddd;border-radius:8px;margin-bottom:10px;"></iframe><button id="close-pdf-${r.IdPedido}" class="button light small">Cerrar comprobante</button></div>`:''}${isStaff()?`<form id="status-form" class="form-grid"><label>Estado del pedido<select name="status">${opts(orderStates,r.Estado)}</select></label><div class="form-actions"><button class="button primary" type="submit">Guardar estado</button></div><div class="form-error full" role="alert" hidden></div></form>`:''}</section>`;
+      if(canViewPdf){
+          $('#view-pdf-'+r.IdPedido).onclick=e=>{e.preventDefault();viewComprobante(r.IdPedido);};
+      }
       $('#close-detail').onclick=()=>$('#order-detail').replaceChildren();$('#order-detail').scrollIntoView({behavior:'smooth',block:'start'});
       if(isStaff())bindForm($('#status-form'),async v=>{recordConnection(await request('orders/'+id+'/status',v));notify('Estado actualizado');await refresh();await detail(id);});
     }catch(e){if(version===state.routeVersion)displayError(e.message);}
@@ -80,7 +115,7 @@ async function showNewOrder(version){
     }
     function add(){
       if(document.querySelectorAll('.order-line').length>=30){notify('Máximo 30 servicios por pedido');return;}
-      const el=document.createElement('div');el.className='order-line';el.innerHTML=`<label>Servicio<select required><option value="">Seleccionar servicio</option>${catalog.rows.map(s=>`<option value="${s.IdServicio}">${escapeHtml(s.NombreServicio)} · ${currency(s.PrecioBase)}</option>`).join('')}</select></label><label>Cantidad<input type="number" min="0.01" max="10000" step="0.01" value="1" required></label><p class="line-price">₡0</p><button class="button light small" type="button">Quitar</button>`;
+      const el=document.createElement('div');el.className='order-line';el.innerHTML=`<label>Servicio<select required><option value="">Seleccionar servicio</option>${catalog.rows.map(s=>`<option value="${s.IdServicio}">${escapeHtml(s.NombreServicio)} · ${currency(s.PrecioBase)}</option>`).join('')}</select></label><label>Cantidad<input type="number" min="1" max="10000" step="1" value="1" required></label><p class="line-price">₡0</p><button class="button light small" type="button">Quitar</button>`;
       $('button',el).onclick=()=>{el.remove();total();};$('select',el).onchange=total;$('input',el).oninput=total;$('#order-lines').append(el);total();
     }
     $('#add-line').onclick=add;add();

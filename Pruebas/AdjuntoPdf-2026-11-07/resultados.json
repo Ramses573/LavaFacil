@@ -1,0 +1,104 @@
+{
+  "generado": "2026-11-07T00:24:39.1869453-06:00",
+  "total": 16,
+  "pasan": 16,
+  "fallan": 0,
+  "casos": [
+    {
+      "Id": "1",
+      "Titulo": "PedidoCreado genera PDF A4 legible con datos del pedido",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "2",
+      "Titulo": "Acentos y ñ se conservan en el PDF",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "3a",
+      "Titulo": "30 items: los 30 nombres y el total (una sola vez) caben en la A4",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "3b",
+      "Titulo": "60 items: se corta en 50 y aparece '... y 10 servicios mas'",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "3c-diagnostico",
+      "Titulo": "45 items: la paginacion si entra en accion (>=2 paginas)",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "4",
+      "Titulo": "ComprobantePago: titulo con idPago/idPedido, datos, TotalPedido y sin tabla",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "4b",
+      "Titulo": "ComprobantePago sin TotalPedido usa Total como respaldo",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "4c",
+      "Titulo": "ComprobantePago omite filas vacias (Estado, Metodo, Referencia)",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "5",
+      "Titulo": "PedidoEstado: TryCrear false sin error",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "6",
+      "Titulo": "snapshot invalido (array) y limite de tamano: false con error, sin excepcion",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "7",
+      "Titulo": "Outbox con adjunto: boundaries aleatorios, alternative anidado y PDF base64",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "8",
+      "Titulo": "Regresion OTP: sin multipart/mixed ni application/pdf",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "9",
+      "Titulo": "Adjunto invalido: se descarta, Enviado=true y Advertencia no nula",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "10",
+      "Titulo": "Outbox deshabilitado si LAVAFACIL_CORREO_SALIDA cae dentro del sitio",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "11",
+      "Titulo": "AdjuntoCorreo rechaza contenido que no empieza por %PDF-",
+      "Estado": "PASS",
+      "Detalle": ""
+    },
+    {
+      "Id": "extra-correopedidos",
+      "Titulo": "CorreoPedidos adjunta en PedidoCreado/Pago y no en PedidoEstado",
+      "Estado": "PASS",
+      "Detalle": ""
+    }
+  ]
+}

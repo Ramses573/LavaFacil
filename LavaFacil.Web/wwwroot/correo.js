@@ -263,9 +263,33 @@ function showRecover() {
 
   bindForm(form, async values => {
     if (step === 1) {
+      const errorBox = $('.form-error', form);
+      const idInput = $('#recover-id');
+      const showStep1Error = text => {
+        errorBox.textContent = text;
+        errorBox.hidden = false;
+        idInput.focus();
+      };
       identifier = String(values.identificador || '').trim();
       if (!identifier) throw new Error('Escribe tu usuario o correo electrónico.');
-      const result = await request('email/recuperacion/solicitar', { identificador: identifier });
+      let result;
+      try {
+        result = await request('email/recuperacion/solicitar', { identificador: identifier });
+      } catch (error) {
+        const retry = Math.ceil(Number(error?.payload?.retryAfterSegundos) || 0);
+        if (error?.status === 429 || retry > 0) {
+          showStep1Error(retry > 0
+            ? `Demasiadas solicitudes. Espera ${retry} segundos antes de reintentar.`
+            : 'Demasiadas solicitudes. Espera un momento antes de reintentar.');
+        } else {
+          showStep1Error(error?.message || 'No pudimos enviar la solicitud. Reintenta en un momento.');
+        }
+        return;
+      }
+      if (result && result.enviado === false) {
+        showStep1Error(result.message || 'No pudimos enviar el código. Reintenta en un momento.');
+        return;
+      }
       step = 2;
       step1.hidden = true;
       step2.hidden = false;

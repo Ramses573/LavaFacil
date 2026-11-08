@@ -1,0 +1,1 @@
+nombre de adjunto invalido; adjunto vacio; contenido de adjunto no es PDF

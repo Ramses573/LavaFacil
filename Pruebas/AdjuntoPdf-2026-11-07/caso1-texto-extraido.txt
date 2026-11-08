@@ -1,0 +1,5 @@
+paginas=1
+bytes=55703
+total exacto con simbolo ₡
+
+LavaFácilComprobante de pedidoPedido #1807/11/2026 09:05Comprobante operativo de LavaFácil. Este documento no constituye una factura fiscal.Generado automáticamente · Página 1Cliente: Carlos Ramírez QuesadaServicioCant.SubtotalLavado por kilo2₡3 000,00Planchado1₡1 500,00Total₡4 500,00

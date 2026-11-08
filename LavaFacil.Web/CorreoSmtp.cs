@@ -23,7 +23,9 @@ sealed class CorreoSmtp
         var ruta = Path.Combine(env.ContentRootPath, "Data", "correo.dpapi");
         var salida = Environment.GetEnvironmentVariable("LAVAFACIL_CORREO_SALIDA");
         var entornoDePruebas = env.IsDevelopment() || env.IsEnvironment("Test");
-        outbox = entornoDePruebas && !string.IsNullOrWhiteSpace(salida) ? salida.Trim() : null;
+        var posibleOutbox = entornoDePruebas && !string.IsNullOrWhiteSpace(salida) ? salida.Trim() : null;
+        // El outbox escribe archivos: nunca debe quedar dentro del sitio publicado.
+        outbox = posibleOutbox is not null && !EstaDentroDelSitio(posibleOutbox, env) ? posibleOutbox : null;
 
         if (!File.Exists(ruta)) return;
 
@@ -51,13 +53,74 @@ sealed class CorreoSmtp
         catch (NotSupportedException) { /* Configuracion con tipos inesperados. */ }
     }
 
+    /// <summary>
+    /// true cuando <paramref name="ruta"/> cae dentro de WebRootPath o ContentRootPath.
+    /// Se quitan los prefijos de dispositivo (<c>\\?\</c> y <c>\\.\</c>) antes de
+    /// normalizar las rutas; una ruta inválida se trata como interna.
+    /// </summary>
+    static bool EstaDentroDelSitio(string ruta, IWebHostEnvironment env)
+    {
+        var comparacion = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        string destino;
+        try
+        {
+            destino = NormalizarRuta(ruta);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return true;
+        }
+
+        foreach (var raizBruta in new[] { env.WebRootPath, env.ContentRootPath })
+        {
+            if (string.IsNullOrWhiteSpace(raizBruta)) continue;
+
+            try
+            {
+                var raiz = NormalizarRuta(raizBruta);
+                if (destino.Equals(raiz, comparacion)) return true;
+
+                var prefijo = raiz + Path.DirectorySeparatorChar;
+                if (destino.StartsWith(prefijo, comparacion)) return true;
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                // Raiz invalida: se ignora y se evalua la siguiente.
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Quita el prefijo de dispositivo de una ruta y la normaliza. Windows acepta
+    /// <c>\\?\C:\...</c> y <c>\\.\C:\...</c> para la misma ubicación, por lo que
+    /// deben compararse sin el prefijo para no eludir la guarda del outbox.
+    /// </summary>
+    static string NormalizarRuta(string ruta)
+    {
+        var limpia = ruta.Trim();
+        if (limpia.StartsWith(@"\\?\", StringComparison.Ordinal)) limpia = limpia[4..];
+        else if (limpia.StartsWith(@"\\.\", StringComparison.Ordinal)) limpia = limpia[4..];
+
+        return Path.GetFullPath(limpia)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+    }
+
     /// <summary>true cuando Data/correo.dpapi existe y tiene host y remitente validos.</summary>
     public bool Configurado => configuracion is not null;
 
     /// <summary>true cuando LAVAFACIL_CORREO_SALIDA apunta a una carpeta en Development o Test.</summary>
     public bool OutboxActivo => outbox is not null;
 
-    public async Task<ResultadoEnvio> EnviarMensajeAsync(string destino, string? nombre, string asunto, string texto, string html, CancellationToken ct)
+    public Task<ResultadoEnvio> EnviarMensajeAsync(string destino, string? nombre, string asunto, string texto, string html, CancellationToken ct) =>
+        EnviarMensajeAsync(destino, nombre, asunto, texto, html, null, ct);
+
+    public async Task<ResultadoEnvio> EnviarMensajeAsync(string destino, string? nombre, string asunto, string texto, string html,
+        IReadOnlyList<AdjuntoCorreo>? adjuntos, CancellationToken ct)
     {
         if (!MailAddress.TryCreate(destino, out var para) || string.IsNullOrWhiteSpace(para.Address))
             return new(false, "destinatario invalido");
@@ -70,22 +133,45 @@ sealed class CorreoSmtp
             : nombre.Replace("\r", " ").Replace("\n", " ").Trim();
         if (nombreSeguro.Length > 150) nombreSeguro = nombreSeguro[..150];
 
+        var validos = new List<AdjuntoCorreo>();
+        string? advertencia = null;
+        if (adjuntos is not null)
+        {
+            foreach (var adjunto in adjuntos)
+            {
+                string? errorAdjunto = null;
+                if (adjunto is not null && adjunto.TryValidar(out errorAdjunto))
+                {
+                    validos.Add(adjunto);
+                    continue;
+                }
+
+                var motivo = string.IsNullOrWhiteSpace(errorAdjunto) ? "adjunto invalido" : errorAdjunto!;
+                advertencia = advertencia is null ? motivo : advertencia + "; " + motivo;
+            }
+        }
+
         if (outbox is not null)
         {
             try
             {
-                await EscribirOutboxAsync(outbox, para.Address, asunto, "mensaje", texto, html, ct);
-                return new(true, null);
+                if (validos.Count == 0)
+                    await EscribirOutboxAsync(outbox, para.Address, asunto, "mensaje", texto, html, ct);
+                else
+                    await EscribirOutboxConAdjuntosAsync(outbox, para.Address, asunto, "mensaje", texto, html, validos, ct);
+
+                return new(true, null, advertencia);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
             {
-                return new(false, ex.Message);
+                return new(false, ex.Message, advertencia);
             }
         }
 
         var cfg = configuracion;
-        if (cfg is null) return new(false, "no configurado");
-        return await EnviarPorSmtpAsync(cfg, para.Address, nombreSeguro, asunto, html, texto, ct);
+        if (cfg is null) return new(false, "no configurado", advertencia);
+        var resultado = await EnviarPorSmtpAsync(cfg, para.Address, nombreSeguro, asunto, html, texto, ct, validos);
+        return resultado with { Advertencia = advertencia };
     }
 
     public async Task<ResultadoEnvio> EnviarCodigoAsync(string destino, string? nombre, string codigo, string proposito, int minutos, CancellationToken ct)
@@ -120,7 +206,8 @@ sealed class CorreoSmtp
         return await EnviarPorSmtpAsync(cfg, para.Address, nombre, asunto, html, texto, ct);
     }
 
-    static async Task<ResultadoEnvio> EnviarPorSmtpAsync(ConfiguracionCorreo cfg, string destino, string? nombre, string asunto, string html, string texto, CancellationToken ct)
+    static async Task<ResultadoEnvio> EnviarPorSmtpAsync(ConfiguracionCorreo cfg, string destino, string? nombre, string asunto, string html, string texto,
+        CancellationToken ct, IReadOnlyList<AdjuntoCorreo>? adjuntos = null)
     {
         var nombreSeguro = string.IsNullOrWhiteSpace(nombre) ? null : nombre.Replace("\r", " ").Replace("\n", " ").Trim();
         using var mensaje = new MailMessage
@@ -137,6 +224,24 @@ sealed class CorreoSmtp
             : new MailAddress(destino, nombreSeguro, Encoding.UTF8));
         using var alterno = AlternateView.CreateAlternateViewFromString(texto, Encoding.UTF8, MediaTypeNames.Text.Plain);
         mensaje.AlternateViews.Add(alterno);
+
+        // Los flujos se mantienen abiertos hasta que SendMailAsync termina.
+        var flujos = new List<MemoryStream>();
+        if (adjuntos is not null)
+        {
+            foreach (var adjunto in adjuntos)
+            {
+                var flujo = new MemoryStream(adjunto.Contenido, writable: false);
+                flujos.Add(flujo);
+                var archivo = new Attachment(flujo, adjunto.NombreArchivo, MediaTypeNames.Application.Pdf);
+                if (archivo.ContentDisposition is { } disposicion)
+                {
+                    disposicion.DispositionType = DispositionTypeNames.Attachment;
+                    disposicion.Inline = false;
+                }
+                mensaje.Attachments.Add(archivo);
+            }
+        }
 
         using var cliente = new SmtpClient(cfg.Host, cfg.Port)
         {
@@ -166,6 +271,10 @@ sealed class CorreoSmtp
         catch (Exception ex)
         {
             return new(false, ex.Message);
+        }
+        finally
+        {
+            foreach (var flujo in flujos) flujo.Dispose();
         }
     }
 
@@ -210,6 +319,7 @@ sealed class CorreoSmtp
         Directory.CreateDirectory(carpeta);
         var archivo = DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N") + ".eml";
         var ruta = Path.Combine(carpeta, archivo);
+        var boundary = NuevoBoundary();
         var contenido = string.Join(Environment.NewLine, new[]
         {
             "From: LavaFacil <no-reply@lavafacil.local>",
@@ -219,21 +329,97 @@ sealed class CorreoSmtp
             $"Message-ID: <{Guid.NewGuid():N}@lavafacil.local>",
             "MIME-Version: 1.0",
             $"X-LavaFacil-Proposito: {proposito}",
-            "Content-Type: multipart/alternative; boundary=\"lavafacil-boundary\"",
+            $"Content-Type: multipart/alternative; boundary=\"{boundary}\"",
             "",
-            "--lavafacil-boundary",
+            $"--{boundary}",
             "Content-Type: text/plain; charset=utf-8",
             "Content-Transfer-Encoding: 8bit",
             "",
-            texto,
-            "--lavafacil-boundary",
+            NeutralizarBoundary(texto),
+            $"--{boundary}",
             "Content-Type: text/html; charset=utf-8",
             "Content-Transfer-Encoding: 8bit",
             "",
-            html,
-            "--lavafacil-boundary--"
+            NeutralizarBoundary(html),
+            $"--{boundary}--"
         });
         await File.WriteAllTextAsync(ruta, contenido, new UTF8Encoding(false), ct);
+    }
+
+    static string NuevoBoundary() => "lavafacil-" + Guid.NewGuid().ToString("N");
+
+    /// <summary>
+    /// Evita que una linea del cuerpo pueda confundirse con un delimitador MIME.
+    /// </summary>
+    static string NeutralizarBoundary(string? cuerpo)
+    {
+        if (string.IsNullOrEmpty(cuerpo)) return "";
+
+        var lineas = cuerpo.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        for (var i = 0; i < lineas.Length; i++)
+        {
+            if (lineas[i].StartsWith("--", StringComparison.Ordinal))
+                lineas[i] = " " + lineas[i];
+        }
+
+        return string.Join(Environment.NewLine, lineas);
+    }
+
+    static async Task EscribirOutboxConAdjuntosAsync(string carpeta, string destino, string asunto, string proposito,
+        string texto, string html, IReadOnlyList<AdjuntoCorreo> adjuntos, CancellationToken ct)
+    {
+        Directory.CreateDirectory(carpeta);
+        var archivo = DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N") + ".eml";
+        var ruta = Path.Combine(carpeta, archivo);
+
+        var mixto = NuevoBoundary();
+        var alternativo = NuevoBoundary();
+
+        var contenido = new StringBuilder();
+        contenido.Append("From: LavaFacil <no-reply@lavafacil.local>").AppendLine();
+        contenido.Append("To: ").Append(destino).AppendLine();
+        contenido.Append("Subject: ").Append(asunto).AppendLine();
+        contenido.Append("Date: ").Append(DateTimeOffset.Now.ToString("R")).AppendLine();
+        contenido.Append("Message-ID: <").Append(Guid.NewGuid().ToString("N")).Append("@lavafacil.local>").AppendLine();
+        contenido.Append("MIME-Version: 1.0").AppendLine();
+        contenido.Append("X-LavaFacil-Proposito: ").Append(proposito).AppendLine();
+        contenido.Append("Content-Type: multipart/mixed; boundary=\"").Append(mixto).Append('"').AppendLine();
+        contenido.AppendLine();
+        contenido.Append("--").Append(mixto).AppendLine();
+        contenido.Append("Content-Type: multipart/alternative; boundary=\"").Append(alternativo).Append('"').AppendLine();
+        contenido.AppendLine();
+        contenido.Append("--").Append(alternativo).AppendLine();
+        contenido.Append("Content-Type: text/plain; charset=utf-8").AppendLine();
+        contenido.Append("Content-Transfer-Encoding: 8bit").AppendLine();
+        contenido.AppendLine();
+        contenido.Append(NeutralizarBoundary(texto)).AppendLine();
+        contenido.Append("--").Append(alternativo).AppendLine();
+        contenido.Append("Content-Type: text/html; charset=utf-8").AppendLine();
+        contenido.Append("Content-Transfer-Encoding: 8bit").AppendLine();
+        contenido.AppendLine();
+        contenido.Append(NeutralizarBoundary(html)).AppendLine();
+        contenido.Append("--").Append(alternativo).Append("--").AppendLine();
+
+        foreach (var adjunto in adjuntos)
+        {
+            contenido.Append("--").Append(mixto).AppendLine();
+            contenido.Append("Content-Type: application/pdf; name=\"").Append(adjunto.NombreArchivo).Append('"').AppendLine();
+            contenido.Append("Content-Transfer-Encoding: base64").AppendLine();
+            contenido.Append("Content-Disposition: attachment; filename=\"").Append(adjunto.NombreArchivo).Append('"').AppendLine();
+            contenido.AppendLine();
+            foreach (var linea in LineasBase64(adjunto.Contenido)) contenido.Append(linea).AppendLine();
+        }
+
+        contenido.Append("--").Append(mixto).Append("--");
+        await File.WriteAllTextAsync(ruta, contenido.ToString(), new UTF8Encoding(false), ct);
+    }
+
+    static IEnumerable<string> LineasBase64(byte[] datos)
+    {
+        const int tamano = 76;
+        var codificado = Convert.ToBase64String(datos);
+        for (var i = 0; i < codificado.Length; i += tamano)
+            yield return codificado.Substring(i, Math.Min(tamano, codificado.Length - i));
     }
 
     sealed class ConfiguracionCorreo
@@ -248,4 +434,4 @@ sealed class CorreoSmtp
     }
 }
 
-record ResultadoEnvio(bool Enviado, string? Error);
+record ResultadoEnvio(bool Enviado, string? Error, string? Advertencia = null);

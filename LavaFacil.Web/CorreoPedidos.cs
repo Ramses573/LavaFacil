@@ -53,7 +53,14 @@ sealed class CorreoPedidos : BackgroundService
             try
             {
                 var mensaje = CrearMensaje(fila);
-                var resultado = await smtp.EnviarMensajeAsync(mensaje.Destino, mensaje.Nombre, mensaje.Asunto, mensaje.Texto, mensaje.Html, ct);
+                if (!string.IsNullOrWhiteSpace(mensaje.ErrorAdjunto))
+                    log.LogWarning("El envío de correo {IdEnvio} se enviará sin adjunto: {Motivo}", id, mensaje.ErrorAdjunto);
+
+                IReadOnlyList<AdjuntoCorreo>? adjuntos = mensaje.Adjunto is null ? null : new[] { mensaje.Adjunto };
+                var resultado = await smtp.EnviarMensajeAsync(mensaje.Destino, mensaje.Nombre, mensaje.Asunto, mensaje.Texto, mensaje.Html, adjuntos, ct);
+                if (!string.IsNullOrWhiteSpace(resultado.Advertencia))
+                    log.LogWarning("El envío de correo {IdEnvio} se completó con advertencia: {Advertencia}", id, resultado.Advertencia);
+
                 await ResolverAsync(id, tokenLease.Value, resultado.Enviado, resultado.Error, ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
@@ -92,6 +99,7 @@ sealed class CorreoPedidos : BackgroundService
         var apellidos = TextoJson(root, "Apellidos");
         var nombreCompleto = string.Join(" ", new[] { nombre, apellidos }.Where(s => !string.IsNullOrWhiteSpace(s))).Trim();
         var esPago = tipo.Equals("PagoConfirmado", StringComparison.OrdinalIgnoreCase) || tipo.Equals("ComprobantePago", StringComparison.OrdinalIgnoreCase);
+        var esPedidoCreado = tipo.Equals("PedidoCreado", StringComparison.OrdinalIgnoreCase);
         var esPedidoEstado = tipo.Equals("PedidoEstado", StringComparison.OrdinalIgnoreCase);
         var estadoNuevo = TextoJson(root, "EstadoNuevo");
         var asunto = esPago
@@ -139,7 +147,30 @@ sealed class CorreoPedidos : BackgroundService
             .Append("<p>").Append(WebUtility.HtmlEncode(introduccion)).Append("</p><dl>");
         foreach (var linea in lineas) html.Append("<dt><strong>").Append(WebUtility.HtmlEncode(linea.Etiqueta)).Append("</strong></dt><dd>").Append(WebUtility.HtmlEncode(linea.Valor)).Append("</dd>");
         html.Append("</dl><p>Gracias,<br>LavaFácil</p></div>");
-        return new(address.Address, nombreCompleto, asunto, texto.ToString(), html.ToString());
+
+        AdjuntoCorreo? adjunto = null;
+        string? errorAdjunto = null;
+        if (esPedidoCreado || esPago)
+        {
+            var idPedidoPdf = pedido > 0 ? pedido : EnteroJson(root, "IdPedido");
+            var idPagoPdf = pago > 0 ? pago : EnteroJson(root, "IdPago");
+            try
+            {
+                if (!ComprobantePdf.TryCrear(tipo, root, idPedidoPdf, idPagoPdf, out adjunto, out errorAdjunto))
+                {
+                    adjunto = null;
+                    errorAdjunto ??= "no se pudo generar el comprobante";
+                }
+            }
+            catch (Exception ex)
+            {
+                // Degradacion: el correo se envia sin adjunto.
+                adjunto = null;
+                errorAdjunto = $"no se pudo preparar el comprobante adjunto ({ex.GetType().Name})";
+            }
+        }
+
+        return new(address.Address, nombreCompleto, asunto, texto.ToString(), html.ToString(), adjunto, errorAdjunto);
     }
 
     static string? DetalleTexto(JsonElement root)
@@ -161,8 +192,14 @@ sealed class CorreoPedidos : BackgroundService
     static string? Dinero(JsonElement e, string propiedad) => e.TryGetProperty(propiedad, out var v) && v.TryGetDecimal(out var d) ? d.ToString("C2", CultureInfo.GetCultureInfo("es-CR")) : TextoJson(e, propiedad);
     static string? Texto(Dictionary<string, object?> f, string k) => f.TryGetValue(k, out var v) && v is not null ? Convert.ToString(v, CultureInfo.InvariantCulture) : null;
     static int Entero(Dictionary<string, object?> f, string k) => int.TryParse(Texto(f, k), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : 0;
+    static int EnteroJson(JsonElement e, string propiedad)
+    {
+        if (!e.TryGetProperty(propiedad, out var v)) return 0;
+        if (v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var n)) return n;
+        return int.TryParse(v.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out n) ? n : 0;
+    }
     static long EnteroLargo(Dictionary<string, object?> f, string k) => long.TryParse(Texto(f, k), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : 0;
     static Guid? TokenLease(Dictionary<string, object?> f) => f.TryGetValue("TokenLease", out var v) && v is Guid token && token != Guid.Empty ? token : null;
     static string? Sanitizar(string? error) { if (string.IsNullOrWhiteSpace(error)) return null; var limpio = new string(error.Where(c => !char.IsControl(c) || c is '\t').ToArray()).Trim(); return limpio.Length > 1000 ? limpio[..1000] : limpio; }
-    readonly record struct MensajeCorreo(string Destino, string? Nombre, string Asunto, string Texto, string Html);
+    readonly record struct MensajeCorreo(string Destino, string? Nombre, string Asunto, string Texto, string Html, AdjuntoCorreo? Adjunto, string? ErrorAdjunto);
 }
