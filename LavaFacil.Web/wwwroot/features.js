@@ -12,7 +12,7 @@ function applyPreferences(p) {
 
 /* Comprobante PDF viewer */
 function viewComprobante(idPedido) {
-    const url = `pedidos/${idPedido}/comprobante`;
+    const url = `/api/pedidos/${idPedido}/comprobante`;
     fetch(url)
         .then(res => {
             if (!res.ok) throw new Error('No se pudo obtener el comprobante');

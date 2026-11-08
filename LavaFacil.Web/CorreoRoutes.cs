@@ -200,19 +200,43 @@ static class CorreoRoutes
         /// </summary>
         authenticated.MapGet("/pedidos/{idPedido:int}/comprobante", async (int idPedido, HttpContext ctx, Database db) =>
         {
-            // Obtener los datos del pedido (usa el mismo procedimiento que el worker de correo)
+            // Primer intento: snapshot desde la cola de correo (flujo normal de la app).
             var resultado = await db.Call("app_DatosCorreoPedido", new[] {
                 Database.Id(ctx),
                 Database.Param("IdPedido", idPedido.ToString(), 10)
             });
 
             var fila = resultado.Rows.FirstOrDefault();
-            if (fila is null)
-                return Results.NotFound();
+            var datosJson = fila is not null && fila.TryGetValue("DatosJson", out var dv) && dv is string s ? s : "";
 
-            var datosJson = fila.TryGetValue("DatosJson", out var dv) && dv is string s ? s : "";
+            // Fallback: sin snapshot (pedido creado fuera del flujo o cliente sin correo),
+            // construir el JSON desde los datos vivos del pedido.
             if (string.IsNullOrWhiteSpace(datosJson))
-                return Results.NotFound();
+            {
+                var detalle = await db.Call("app_DetallePedido", new[] {
+                    Database.Id(ctx),
+                    Database.Param("IdPedido", idPedido.ToString(), 10)
+                });
+
+                if (detalle.Rows.Count == 0)
+                    return Results.NotFound();
+
+                var primera = detalle.Rows[0];
+                datosJson = JsonSerializer.Serialize(new
+                {
+                    IdPedido = idPedido,
+                    Nombre = Texto(primera, "Cliente") ?? "",
+                    Apellidos = "",
+                    Total = Entero(primera, "Total"),
+                    FechaPedido = Valor(primera, "FechaPedido"),
+                    Detalle = detalle.Rows.Select(f => new
+                    {
+                        NombreServicio = Texto(f, "NombreServicio") ?? "",
+                        Cantidad = Entero(f, "Cantidad"),
+                        Subtotal = Entero(f, "Subtotal")
+                    }).ToArray()
+                });
+            }
 
             using var doc = JsonDocument.Parse(datosJson);
             var root = doc.RootElement;
