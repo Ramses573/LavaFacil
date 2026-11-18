@@ -6,12 +6,24 @@
 *.user
 *.log
 
-# Artefactos de ejecución de las pruebas (PIDs y salidas de error)
+# Artefactos de ejecución de las pruebas automatizadas (PIDs, errores, temporales)
 *.pid
 *.err
+*.tmp
+*.trx
+*.coverage
 
-# Builds locales generados dentro de las carpetas de evidencias
+# Resultados y compilados generados por las pruebas dentro de Pruebas/
+Pruebas/**/bin/
+Pruebas/**/obj/
+Pruebas/**/TestResults/
 Pruebas/**/lavafacil-mail-build/
+Pruebas/**/node_modules/
+
+# Binarios compilados: no se versionan, se regeneran con build
+*.dll
+*.exe
+*.pdb
 
 # Credenciales, exportaciones privadas y respaldos de SQL Server
 *.dpapi*
