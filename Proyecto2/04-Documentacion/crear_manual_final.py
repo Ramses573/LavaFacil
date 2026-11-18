@@ -178,6 +178,7 @@ items = [
     "2. Distribución de métodos de carga",
     "3. Cargas BCP — Rachel (cinco tablas)",
     "4. Asistente SSMS — Ramsés (cinco tablas)",
+    "Evidencia complementaria de BULK INSERT",
     "5. Verificación de registros",
     "6. API GraphQL, seguridad y CRUD",
     "7. Pruebas, incidencias y soluciones",
@@ -268,6 +269,18 @@ for num, name, csv_name, verify in [
     add_body(doc, f"Archivo: {csv_name}. Se aplicó la misma configuración documentada: UTF-8, delimitador punto y coma, encabezados en la primera fila y destino en la tabla existente de LavaFacil.")
     add_body(doc, "La evidencia conservada muestra el resultado en SQL Server después de la carga. Los valores vacíos de relaciones opcionales se interpretaron como NULL cuando correspondía.")
     add_image(doc, REAL / verify, f"Verificación real en SSMS de los tres registros cargados en {name}.")
+
+page_break(doc)
+add_h1(doc, "Evidencia complementaria de BULK INSERT")
+add_body(doc, "Además de los dos métodos obligatorios indicados en el enunciado, se ejecutó una carga mediante BULK INSERT. Esta evidencia se presenta como trabajo complementario y no sustituye las cargas realizadas con BCP ni con el Asistente de importación de SSMS.")
+add_body(doc, "La secuencia documenta la instrucción SQL utilizada, los mensajes de ejecución y la consulta final con los datos cargados.")
+add_image(doc, REAL / "Bulk_01_Instruccion_Real.jpg", "Instrucción BULK INSERT real ejecutada desde SQL Server Management Studio.")
+page_break(doc)
+add_h2(doc, "Resultado de la ejecución BULK INSERT")
+add_image(doc, REAL / "Bulk_02_Mensajes_Real.jpg", "Mensajes reales emitidos por SQL Server al ejecutar BULK INSERT.")
+page_break(doc)
+add_h2(doc, "Verificación de los datos cargados")
+add_image(doc, REAL / "Bulk_03_Resultados_Real.jpg", "Consulta real con el resultado de la carga complementaria mediante BULK INSERT.")
 
 page_break(doc)
 add_h1(doc, "5. Verificación integral de datos")
