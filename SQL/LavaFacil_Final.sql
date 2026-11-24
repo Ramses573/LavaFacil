@@ -274,9 +274,9 @@ SET IDENTITY_INSERT [dbo].[Recolecciones] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Servicios] ON 
 
-INSERT [dbo].[Servicios] ([IdServicio], [NombreServicio], [Descripcion], [TipoCobro], [PrecioBase], [CantidadIncluida], [PrecioAdicional], [Activo]) VALUES (4, N'Lavado, secado y doblado', N'Servicio de demostracion del proyecto', N'Kilogramo', CAST(1500.00 AS Decimal(10, 2)), CAST(1.00 AS Decimal(10, 2)), CAST(0.00 AS Decimal(10, 2)), 1)
-INSERT [dbo].[Servicios] ([IdServicio], [NombreServicio], [Descripcion], [TipoCobro], [PrecioBase], [CantidadIncluida], [PrecioAdicional], [Activo]) VALUES (5, N'Uniformes deportivos', N'Servicio de demostracion del proyecto', N'Uniforme', CAST(2500.00 AS Decimal(10, 2)), CAST(1.00 AS Decimal(10, 2)), CAST(0.00 AS Decimal(10, 2)), 1)
-INSERT [dbo].[Servicios] ([IdServicio], [NombreServicio], [Descripcion], [TipoCobro], [PrecioBase], [CantidadIncluida], [PrecioAdicional], [Activo]) VALUES (6, N'Edredones demo 3', N'Servicio de demostracion del proyecto', N'Unidad', CAST(6000.00 AS Decimal(10, 2)), CAST(1.00 AS Decimal(10, 2)), CAST(0.00 AS Decimal(10, 2)), 1)
+INSERT [dbo].[Servicios] ([IdServicio], [NombreServicio], [Descripcion], [TipoCobro], [PrecioBase], [CantidadIncluida], [PrecioAdicional], [Activo]) VALUES (4, N'Lavado, secado y doblado', N'Servicio de demostracion del proyecto', N'Kilogramo', CAST(1500.00 AS Decimal(10, 2)), CAST(1.00 AS Decimal(10, 2)), CAST(750.00 AS Decimal(10, 2)), 1)
+INSERT [dbo].[Servicios] ([IdServicio], [NombreServicio], [Descripcion], [TipoCobro], [PrecioBase], [CantidadIncluida], [PrecioAdicional], [Activo]) VALUES (5, N'Uniformes deportivos', N'Servicio de demostracion del proyecto', N'Uniforme', CAST(2500.00 AS Decimal(10, 2)), CAST(1.00 AS Decimal(10, 2)), CAST(1250.00 AS Decimal(10, 2)), 1)
+INSERT [dbo].[Servicios] ([IdServicio], [NombreServicio], [Descripcion], [TipoCobro], [PrecioBase], [CantidadIncluida], [PrecioAdicional], [Activo]) VALUES (6, N'Edredones demo 3', N'Servicio de demostracion del proyecto', N'Unidad', CAST(6000.00 AS Decimal(10, 2)), CAST(1.00 AS Decimal(10, 2)), CAST(1000.00 AS Decimal(10, 2)), 1)
 SET IDENTITY_INSERT [dbo].[Servicios] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Usuarios] ON 
