@@ -2749,6 +2749,223 @@
           ]
         }
       ]
+    },
+    {
+      "name": "05 - Consultas por ID",
+      "item": [
+        {
+          "name": "5.1 Cliente por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const respuesta = pm.response.json();",
+                  "pm.test('Sin errores GraphQL', () => pm.expect(respuesta.errors).to.eql(undefined));",
+                  "pm.test('Cliente encontrado', () => pm.expect(respuesta.data.clientePorId).to.be.an('object'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query { clientePorId(idCliente: 2001) { idCliente cedula nombre apellidos telefono email direccion fechaRegistro activo } }",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            },
+            "description": "Consulta individual de cliente por IdCliente (requiere rol Empleado/Administrador)."
+          }
+        },
+        {
+          "name": "5.2 Servicio por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const respuesta = pm.response.json();",
+                  "pm.test('Sin errores GraphQL', () => pm.expect(respuesta.errors).to.eql(undefined));",
+                  "pm.test('Servicio encontrado', () => pm.expect(respuesta.data.servicioPorId).to.be.an('object'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query { servicioPorId(idServicio: 2001) { idServicio nombreServicio descripcion tipoCobro precioBase cantidadIncluida precioAdicional activo } }",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            },
+            "description": "Consulta pública individual de servicio por IdServicio."
+          }
+        },
+        {
+          "name": "5.3 Promoción por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const respuesta = pm.response.json();",
+                  "pm.test('Sin errores GraphQL', () => pm.expect(respuesta.errors).to.eql(undefined));",
+                  "pm.test('Promoción encontrada', () => pm.expect(respuesta.data.promocionPorId).to.be.an('object'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query { promocionPorId(idPromocion: 2001) { idPromocion idServicio nombrePromocion descripcion porcentajeDescuento fechaInicio fechaFin activa } }",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            },
+            "description": "Consulta pública individual de promoción por IdPromocion."
+          }
+        },
+        {
+          "name": "5.4 Pedido por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const respuesta = pm.response.json();",
+                  "pm.test('Sin errores GraphQL', () => pm.expect(respuesta.errors).to.eql(undefined));",
+                  "pm.test('Pedido encontrado', () => pm.expect(respuesta.data.pedidoPorId).to.be.an('object'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query { pedidoPorId(idPedido: 2001) { idPedido idCliente fechaPedido fechaEntregaEstimada estado total observaciones } }",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            },
+            "description": "Consulta individual de pedido por IdPedido (requiere rol Empleado/Administrador)."
+          }
+        },
+        {
+          "name": "5.5 Pago por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const respuesta = pm.response.json();",
+                  "pm.test('Sin errores GraphQL', () => pm.expect(respuesta.errors).to.eql(undefined));",
+                  "pm.test('Pago encontrado', () => pm.expect(respuesta.data.pagoPorId).to.be.an('object'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query { pagoPorId(idPago: 2001) { idPago idPedido fechaPago monto metodoPago estadoPago referencia } }",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            },
+            "description": "Consulta individual de pago por IdPago (requiere rol Empleado/Administrador)."
+          }
+        }
+      ]
     }
   ]
 }

@@ -192,3 +192,18 @@ mutation Operacion04CRUDPorTabla0410Inventario4Actualizar($idInventarioDemo: Int
 
 # 04 - CRUD por tabla / 04.10 - Inventario / 5. Eliminar
 mutation Operacion04CRUDPorTabla0410Inventario5Eliminar($idInventarioDemo: Int!) { eliminarInventario(idInventario: $idInventarioDemo) { exito mensaje } }
+
+# 05 - Consultas por ID / 5.1 Cliente por ID
+query Operacion05ConsultasPorID51ClientePorID { clientePorId(idCliente: 2001) { idCliente cedula nombre apellidos telefono email direccion fechaRegistro activo } }
+
+# 05 - Consultas por ID / 5.2 Servicio por ID
+query Operacion05ConsultasPorID52ServicioPorID { servicioPorId(idServicio: 2001) { idServicio nombreServicio descripcion tipoCobro precioBase cantidadIncluida precioAdicional activo } }
+
+# 05 - Consultas por ID / 5.3 Promoción por ID
+query Operacion05ConsultasPorID53PromocionPorID { promocionPorId(idPromocion: 2001) { idPromocion idServicio nombrePromocion descripcion porcentajeDescuento fechaInicio fechaFin activa } }
+
+# 05 - Consultas por ID / 5.4 Pedido por ID
+query Operacion05ConsultasPorID54PedidoPorID { pedidoPorId(idPedido: 2001) { idPedido idCliente fechaPedido fechaEntregaEstimada estado total observaciones } }
+
+# 05 - Consultas por ID / 5.5 Pago por ID
+query Operacion05ConsultasPorID55PagoPorID { pagoPorId(idPago: 2001) { idPago idPedido fechaPago monto metodoPago estadoPago referencia } }
