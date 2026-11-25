@@ -6,7 +6,7 @@
 
 # 01 - Autenticación y roles / 1.1 Login Administrador y guardar token
 mutation LoginAdministrador {
-  login(usuario: "admin_p2_01", clave: "DemoTemporal2026!3") {
+  login(usuario: "ramses.aguilar", clave: "ramsesaguilar2024") {
     exito mensaje idUsuario nombreUsuario rol token
   }
 }
@@ -18,7 +18,7 @@ mutation Operacion01AutenticacionYRoles12LoginCliente { login(usuario: "cliente_
 mutation Operacion01AutenticacionYRoles13LoginEmpleado { login(usuario: "empleado_p2_01", clave: "DemoTemporal2026!2") { exito mensaje rol token } }
 
 # 01 - Autenticación y roles / 1.4 Login con credenciales privadas
-mutation LoginPrivado($usuario: String!, $clave: String!) { login(usuario: $usuario, clave: $clave) { exito mensaje idUsuario nombreUsuario rol token } }
+mutation LoginPrivado { login(usuario: "ramses.aguilar", clave: "ramsesaguilar2024") { exito mensaje idUsuario nombreUsuario rol token } }
 
 # 02 - Consultas públicas / 2.1 Estado de la API
 query Operacion02ConsultasPublicas21EstadoDeLaAPI { estado }

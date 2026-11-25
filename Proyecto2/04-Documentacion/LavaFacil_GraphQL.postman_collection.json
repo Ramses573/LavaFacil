@@ -18,12 +18,12 @@
     },
     {
       "key": "usuarioPrivado",
-      "value": "",
+      "value": "ramses.aguilar",
       "type": "string"
     },
     {
       "key": "clavePrivada",
-      "value": "",
+      "value": "ramsesaguilar2024",
       "type": "string"
     },
     {
@@ -130,7 +130,7 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation LoginAdministrador {\n  login(usuario: \"admin_p2_01\", clave: \"DemoTemporal2026!3\") {\n    exito mensaje idUsuario nombreUsuario rol token\n  }\n}",
+                "query": "mutation LoginAdministrador {\n  login(usuario: \"ramses.aguilar\", clave: \"ramsesaguilar2024\") {\n    exito mensaje idUsuario nombreUsuario rol token\n  }\n}",
                 "variables": ""
               }
             },
@@ -250,8 +250,8 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation LoginPrivado($usuario: String!, $clave: String!) { login(usuario: $usuario, clave: $clave) { exito mensaje idUsuario nombreUsuario rol token } }",
-                "variables": "{\"usuario\":\"{{usuarioPrivado}}\",\"clave\":\"{{clavePrivada}}\"}"
+                "query": "mutation LoginPrivado { login(usuario: \"ramses.aguilar\", clave: \"ramsesaguilar2024\") { exito mensaje idUsuario nombreUsuario rol token } }",
+                "variables": ""
               }
             },
             "url": {
@@ -260,7 +260,7 @@
                 "{{baseUrl}}"
               ]
             },
-            "description": "Permite usar una cuenta privada sin guardar la contraseña directamente en la operación."
+            "description": "Login de demostración listo para ejecutar; guarda automáticamente el token de Administrador."
           }
         }
       ]
