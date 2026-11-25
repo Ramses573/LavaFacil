@@ -29,15 +29,21 @@ static class FeatureRoutes
             await db.Call("app_BuscarPedidos",new[]{Database.Id(ctx),Date("Desde",from),Date("Hasta",to),Database.Param("Estado",Text(status,20),20),
                 Database.Param("Busqueda",Text(search,100),100),Int("IdServicio",serviceId)}));
         api.MapGet("/orders/{id:int}",async(int id,HttpContext ctx,Database db)=>await db.Call("app_DetallePedido",new[]{Database.Id(ctx),Int("IdPedido",id)}));
-        api.MapPost("/orders",async(OrderInput input,HttpContext ctx,Database db)=>{
+        api.MapPost("/orders",async(OrderInput input,HttpContext ctx,Database db,CorreoSmtp smtp)=>{
             if(input.Lines is null || input.Lines.Length is <1 or >30) throw new ArgumentException("Agrega de 1 a 30 servicios.");
             foreach(var line in input.Lines) { Number(line.Quantity,true); if(line.ServiceId<=0 || line.Quantity>10000) throw new ArgumentException("Revisa el servicio y la cantidad."); }
             if(input.Lines.Select(l=>l.ServiceId).Distinct().Count()!=input.Lines.Length) throw new ArgumentException("No repitas servicios; ajusta su cantidad.");
+            // Si el correo está disponible, exige activación; si no, no se puede verificar y no se bloquea.
+            if(smtp.Configurado || smtp.OutboxActivo) await db.Call("app_ExigirCuentaActivada",new[]{Database.Id(ctx)});
             return await db.Call("app_CrearPedido",new[]{Database.Id(ctx),Int("IdCliente",input.ClientId),Database.Param("Observaciones",Text(input.Notes,300),300),
                 new SqlParameter("Lineas",SqlDbType.NVarChar,-1){Value=JsonSerializer.Serialize(input.Lines,new JsonSerializerOptions{PropertyNamingPolicy=JsonNamingPolicy.CamelCase})}});
         });
         api.MapPost("/orders/{id:int}/status",async(int id,OrderStatus input,HttpContext ctx,Database db)=>
             await db.Call("app_CambiarEstadoPedido",new[]{Database.Id(ctx),Int("IdPedido",id),Database.Param("Estado",Text(input.Status,20),20)}));
+        api.MapPost("/orders/{id:int}/delete",async(int id,HttpContext ctx,Database db)=>
+            await db.Call("app_EliminarPedido",new[]{Database.Id(ctx),Int("IdPedido",id)}));
+        api.MapPost("/orders/detalle/{idDetalle:int}/delete",async(int idDetalle,HttpContext ctx,Database db)=>
+            await db.Call("app_EliminarDetallePedido",new[]{Database.Id(ctx),Int("IdDetalle",idDetalle)}));
         api.MapGet("/preferences",async(HttpContext ctx,Database db)=>await db.Call("app_Preferencias",new[]{Database.Id(ctx)}));
         api.MapPost("/preferences",async(PreferencesInput input,HttpContext ctx,Database db)=>await db.Call("app_GuardarPreferencias",new[]{Database.Id(ctx),
             Database.Param("Avatar",Text(input.Avatar,20),20),Database.Param("Tema",Text(input.Theme,20),20),

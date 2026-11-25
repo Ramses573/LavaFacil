@@ -70,7 +70,10 @@ app.UseAuthorization();
 app.MapGet("/api/bootstrap", async (HttpContext ctx, IAntiforgery csrf, Database db, CorreoSmtp mail) => {
     var needsAccount = false;
     var featuresReady = false;
+    var mantenimientosReady = false;
     var mailReady = false;
+    var activacionPendiente = false;
+    var correoVerificado = true;
     if (db.Configured && ctx.User.Identity?.IsAuthenticated != true) {
         try { var initial = await db.Call("app_EstadoInicial", Array.Empty<SqlParameter>()); needsAccount = Convert.ToBoolean(initial.Rows[0]["RequiereAdministrador"]); }
         catch (SqlException) { /* Login sigue disponible para mostrar el error de conexión al intentar entrar. */ }
@@ -78,13 +81,27 @@ app.MapGet("/api/bootstrap", async (HttpContext ctx, IAntiforgery csrf, Database
     if (db.Configured) {
         try { featuresReady = await db.HasFeatures(); }
         catch (SqlException) { /* La pantalla de conexión informará la indisponibilidad. */ }
+        try { mantenimientosReady = await db.HasMantenimientos(); }
+        catch (SqlException) { /* Los mantenimientos quedan ocultos hasta migrar la base. */ }
         try { mailReady = await db.HasCorreo(); }
         catch (SqlException) { /* El módulo de correo queda deshabilitado hasta migrar la base. */ }
+        if (mailReady && ctx.User.Identity?.IsAuthenticated == true) {
+            try {
+                var estado = await db.Call("app_CorreoEstado", new[] { Database.Id(ctx) });
+                var fila = estado.Rows.FirstOrDefault();
+                if (fila is not null) {
+                    activacionPendiente = Convert.ToBoolean(fila["ActivacionPendiente"]);
+                    correoVerificado = Convert.ToBoolean(fila["Verificado"]);
+                }
+            }
+            catch (SqlException) { /* La activación pendiente no bloquea si el estado no se puede consultar. */ }
+        }
     }
     return Results.Json(new {
         token = csrf.GetAndStoreTokens(ctx).RequestToken,
-        configured = db.Configured, needsAccount, featuresReady, mailReady,
+        configured = db.Configured, needsAccount, featuresReady, mantenimientosReady, mailReady,
         correoConfigurado = mail.Configurado || mail.OutboxActivo,
+        activacionPendiente, correoVerificado,
         user = ctx.User.Identity?.IsAuthenticated == true ? new { id = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier), name = ctx.User.Identity.Name, role = ctx.User.FindFirstValue(ClaimTypes.Role) } : null
     });
 });
@@ -111,7 +128,8 @@ app.MapPost("/api/login", async (LoginInput input, Database db, HttpContext ctx)
     LimitesCorreo.Liberar(ipKey);
     LimitesCorreo.Liberar(userKey);
     await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, AuthenticatedPrincipal(row));
-    return Results.Ok(new { user = new { id = row["IdUsuario"], name = row["NombreUsuario"], role = row["TipoUsuario"] }, result.Server, result.DatabaseName });
+    var activacionPendiente = row.TryGetValue("ActivacionPendiente", out var rawActivacion) && rawActivacion is not null && Convert.ToBoolean(rawActivacion);
+    return Results.Ok(new { user = new { id = row["IdUsuario"], name = row["NombreUsuario"], role = row["TipoUsuario"] }, activacionPendiente, result.Server, result.DatabaseName });
 });
 app.MapPost("/api/logout", async (HttpContext ctx) => { await ctx.SignOutAsync(); return Results.Ok(); }).RequireAuthorization();
 app.MapPost("/api/first-account", async (FirstAccountInput input, Database db) => {
@@ -147,7 +165,8 @@ app.MapPost("/api/register", async (RegisterInput input, Database db, HttpContex
     if (row is null || !Convert.ToBoolean(row["LoginValido"])) throw new InvalidOperationException("La cuenta se creó pero no se pudo iniciar automáticamente. Inicia sesión con tus credenciales.");
     await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, AuthenticatedPrincipal(row));
     // Endpoint anónimo: no se devuelve la topología del servidor en el 200 (H-03/B-02).
-    return Results.Ok(new { user = new { id = row["IdUsuario"], name = row["NombreUsuario"], role = row["TipoUsuario"] } });
+    var activacionPendiente = row.TryGetValue("ActivacionPendiente", out var rawActivacion) && rawActivacion is not null && Convert.ToBoolean(rawActivacion);
+    return Results.Ok(new { user = new { id = row["IdUsuario"], name = row["NombreUsuario"], role = row["TipoUsuario"] }, activacionPendiente });
 });
 var authenticated = app.MapGroup("/api").RequireAuthorization();
 authenticated.MapGet("/home", async (HttpContext ctx, Database db) => await db.Call("app_Resumen", new[] { Database.Id(ctx) }));
@@ -165,6 +184,7 @@ authenticated.MapPost("/clients", async (ClientInput input, HttpContext ctx, Dat
     return Results.Ok(await db.Call("app_RegistrarCliente", new[] { Database.Id(ctx), Database.Param("Cedula", input.Identity.Trim(), 20), Database.Param("Nombre", input.Name.Trim(), 50), Database.Param("Apellidos", input.LastName.Trim(), 100), Database.Param("Telefono", input.Phone.Trim(), 20), Database.Param("Email", input.Email.Trim(), 150), Database.Param("Direccion", input.Address?.Trim(), 250) }));
 });
 FeatureRoutes.Map(authenticated);
+MantenimientoRoutes.Map(authenticated, app);
 CorreoRoutes.Map(app, authenticated);
 app.Run();
 
@@ -237,6 +257,12 @@ sealed class Database {
         await connection.OpenAsync();
         using var command = new SqlCommand("SELECT COUNT(*) FROM sys.procedures WHERE schema_id=SCHEMA_ID('dbo') AND name IN ('app_ExigirAdministrador','app_BuscarServicios','app_GuardarServicio','app_CrearPedido','app_BuscarPedidos','app_DetallePedido','app_CambiarEstadoPedido','app_Preferencias','app_GuardarPreferencias','app_Credencial','app_GuardarClave','app_CrearCuentaCliente','app_ActualizarCliente','app_CambiarEstadoCliente','app_EliminarClienteSeguro')",connection);
         return Convert.ToInt32(await command.ExecuteScalarAsync()) == 15;
+    }
+    public async Task<bool> HasMantenimientos() {
+        using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+        using var command = new SqlCommand("SELECT COUNT(*) FROM sys.procedures WHERE schema_id=SCHEMA_ID('dbo') AND name IN ('app_EmpresaPublica','app_GuardarEmpresa','app_ServiciosPublicos','app_ConsultarEmpleados','app_GuardarEmpleado','app_CambiarEstadoEmpleado','app_EliminarEmpleado','app_ConsultarUsuarios','app_GuardarUsuario','app_CambiarEstadoUsuario','app_EliminarUsuario','app_ConsultarInventario','app_GuardarInventario','app_CambiarEstadoInventario','app_EliminarInventario','app_ConsultarPromociones','app_GuardarPromocion','app_CambiarEstadoPromocion','app_EliminarPromocion','app_ConsultarRecolecciones','app_GuardarRecoleccion','app_CambiarEstadoRecoleccion','app_EliminarRecoleccion','app_ConsultarPagos','app_GuardarPago','app_EliminarPago','app_EliminarServicio')",connection);
+        return Convert.ToInt32(await command.ExecuteScalarAsync()) == 27;
     }
     public async Task<bool> HasCorreo() {
         using var connection = new SqlConnection(connectionString);

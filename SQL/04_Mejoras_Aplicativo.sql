@@ -175,7 +175,7 @@ BEGIN
         WHERE p.IdPedido=@IdPedido AND u.IdUsuario=@IdUsuario AND (u.TipoUsuario<>'Cliente' OR p.IdCliente=u.IdCliente))
         THROW 50104,'El pedido no existe o no está disponible para tu cuenta.',1;
     SELECT p.IdPedido,p.Estado,p.Total,p.FechaPedido,p.Observaciones,CONCAT(c.Nombre,' ',c.Apellidos) AS Cliente,
-        d.IdServicio,s.NombreServicio,s.TipoCobro,d.Cantidad,d.PrecioBase,d.MontoAdicional,d.Subtotal
+        d.IdDetalle,d.IdServicio,s.NombreServicio,s.TipoCobro,d.Cantidad,d.PrecioBase,d.MontoAdicional,d.Subtotal
     FROM dbo.Pedidos p JOIN dbo.Clientes c ON c.IdCliente=p.IdCliente
     JOIN dbo.DetallePedido d ON d.IdPedido=p.IdPedido JOIN dbo.Servicios s ON s.IdServicio=d.IdServicio
     WHERE p.IdPedido=@IdPedido ORDER BY d.IdDetalle;

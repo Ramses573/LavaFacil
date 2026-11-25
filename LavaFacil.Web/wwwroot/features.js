@@ -60,8 +60,13 @@ async function showCatalog(version) {
     try {
       const values=new FormData(form);const result=await request('catalog?'+new URLSearchParams({search:values.get('search')||'',inactive:String(values.has('inactive'))}));
       if(version!==state.routeVersion)return;recordConnection(result);rows=result.rows;$('#page-error').hidden=true;
-      $('#catalog-body').innerHTML=rows.length?rows.map(r=>`<tr><td class="name-cell">${escapeHtml(r.NombreServicio)}<p class="subtle">${escapeHtml(r.Descripcion)}</p></td><td>${escapeHtml(r.TipoCobro)}</td><td class="price">${currency(r.PrecioBase)}</td><td>${r.CantidadIncluida}</td><td class="price">${currency(r.PrecioAdicional||0)}</td><td><span class="badge ${r.Activo?'':'inactive'}">${r.Activo?'Activo':'Inactivo'}</span></td>${isAdmin()?`<td><button class="button light small edit-service" data-id="${r.IdServicio}">Editar</button></td>`:''}</tr>`).join(''):'<tr><td colspan="7" class="table-empty">No hay servicios para esta consulta.</td></tr>';
+      $('#catalog-body').innerHTML=rows.length?rows.map(r=>`<tr><td class="name-cell">${escapeHtml(r.NombreServicio)}<p class="subtle">${escapeHtml(r.Descripcion)}</p></td><td>${escapeHtml(r.TipoCobro)}</td><td class="price">${currency(r.PrecioBase)}</td><td>${r.CantidadIncluida}</td><td class="price">${currency(r.PrecioAdicional||0)}</td><td><span class="badge ${r.Activo?'':'inactive'}">${r.Activo?'Activo':'Inactivo'}</span></td>${isAdmin()?`<td><div class="inline-actions"><button class="button light small edit-service" data-id="${r.IdServicio}">Editar</button><button class="button danger small delete-service" data-id="${r.IdServicio}">Eliminar</button></div></td>`:''}</tr>`).join(''):'<tr><td colspan="7" class="table-empty">No hay servicios para esta consulta.</td></tr>';
       document.querySelectorAll('.edit-service').forEach(b=>b.onclick=()=>editor(rows.find(r=>r.IdServicio===Number(b.dataset.id))));
+      document.querySelectorAll('.delete-service').forEach(b=>b.onclick=async()=>{
+        if(!confirm('¿Eliminar este servicio? Solo es posible si no aparece en pedidos anteriores ni tiene promociones.'))return;
+        try{const result=await request('catalog/'+b.dataset.id+'/delete',{});if(version!==state.routeVersion)return;recordConnection(result);notify('Servicio eliminado');await refresh();}
+        catch(e){if(version===state.routeVersion)displayError(e.message);}
+      });
     }catch(e){if(version===state.routeVersion)displayError(e.message);}finally{button.disabled=false;}
   }
   $('#catalog-filter').onsubmit=e=>{e.preventDefault();refresh();};if(isAdmin())$('#new-service').onclick=()=>editor();await refresh();
@@ -75,12 +80,25 @@ async function showOrders(version) {
       const result=await request('orders/'+id);if(version!==state.routeVersion)return;recordConnection(result);
       const r=result.rows[0];if(!r)throw new Error('Este pedido no tiene líneas para mostrar.');
       const canViewPdf=r.Estado==='Listo'||r.Estado==='Entregado';
-      $('#order-detail').innerHTML=`<section class="card order-detail"><div class="detail-heading"><div><h2>Pedido #${r.IdPedido}</h2><p>${escapeHtml(r.Cliente)} · ${escapeHtml(r.Estado)}</p></div><button id="close-detail" class="button light small">Cerrar detalle</button>${canViewPdf?`<a href="#comprobante-${r.IdPedido}" class="button light small" id="view-pdf-${r.IdPedido}">Ver comprobante PDF</a>`:''}</div><p>${escapeHtml(r.Observaciones||'Sin observaciones')}</p><table><thead><tr><th>Servicio</th><th>Cantidad</th><th>Base</th><th>Adicional</th><th>Subtotal</th></tr></thead><tbody>${result.rows.map(d=>`<tr><td>${escapeHtml(d.NombreServicio)}</td><td>${d.Cantidad} ${escapeHtml(d.TipoCobro)}</td><td>${currency(d.PrecioBase)}</td><td>${currency(d.MontoAdicional)}</td><td>${currency(d.Subtotal)}</td></tr>`).join('')}</tbody></table><p class="order-total">Total: ${currency(r.Total)}</p>${canViewPdf?`<div id="comprobante-${r.IdPedido}" class="comprobante-wrapper" hidden><h3>Comprobante de pedido #${r.IdPedido}</h3><iframe id="pdf-frame-${r.IdPedido}" src="" width="100%" height="600px" style="border:1px solid #ddd;border-radius:8px;margin-bottom:10px;"></iframe><button id="close-pdf-${r.IdPedido}" class="button light small">Cerrar comprobante</button></div>`:''}${isStaff()?`<form id="status-form" class="form-grid"><label>Estado del pedido<select name="status">${opts(orderStates,r.Estado)}</select></label><div class="form-actions"><button class="button primary" type="submit">Guardar estado</button></div><div class="form-error full" role="alert" hidden></div></form>`:''}</section>`;
+      $('#order-detail').innerHTML=`<section class="card order-detail"><div class="detail-heading"><div><h2>Pedido #${r.IdPedido}</h2><p>${escapeHtml(r.Cliente)} · ${escapeHtml(r.Estado)}</p></div><div class="detail-actions"><button id="close-detail" class="button light small">Cerrar detalle</button>${canViewPdf?`<a href="#comprobante-${r.IdPedido}" class="button light small" id="view-pdf-${r.IdPedido}">Ver comprobante PDF</a>`:''}${isStaff()?`<button id="delete-order" class="button danger small">Eliminar pedido</button>`:''}</div></div><p>${escapeHtml(r.Observaciones||'Sin observaciones')}</p><table><thead><tr><th>Servicio</th><th>Cantidad</th><th>Base</th><th>Adicional</th><th>Subtotal</th>${isStaff()?'<th>Acciones</th>':''}</tr></thead><tbody>${result.rows.map(d=>`<tr><td>${escapeHtml(d.NombreServicio)}</td><td>${d.Cantidad} ${escapeHtml(d.TipoCobro)}</td><td>${currency(d.PrecioBase)}</td><td>${currency(d.MontoAdicional)}</td><td>${currency(d.Subtotal)}</td>${isStaff()?`<td><button class="button light small remove-line" data-id="${d.IdDetalle}">Quitar</button></td>`:''}</tr>`).join('')}</tbody></table><p class="order-total">Total: ${currency(r.Total)}</p>${canViewPdf?`<div id="comprobante-${r.IdPedido}" class="comprobante-wrapper" hidden><h3>Comprobante de pedido #${r.IdPedido}</h3><iframe id="pdf-frame-${r.IdPedido}" src="" width="100%" height="600px" style="border:1px solid #ddd;border-radius:8px;margin-bottom:10px;"></iframe><button id="close-pdf-${r.IdPedido}" class="button light small">Cerrar comprobante</button></div>`:''}${isStaff()?`<form id="status-form" class="form-grid"><label>Estado del pedido<select name="status">${opts(orderStates,r.Estado)}</select></label><div class="form-actions"><button class="button primary" type="submit">Guardar estado</button></div><div class="form-error full" role="alert" hidden></div></form>`:''}</section>`;
       if(canViewPdf){
           $('#view-pdf-'+r.IdPedido).onclick=e=>{e.preventDefault();viewComprobante(r.IdPedido);};
       }
       $('#close-detail').onclick=()=>$('#order-detail').replaceChildren();$('#order-detail').scrollIntoView({behavior:'smooth',block:'start'});
-      if(isStaff())bindForm($('#status-form'),async v=>{recordConnection(await request('orders/'+id+'/status',v));notify('Estado actualizado');await refresh();await detail(id);});
+      if(isStaff()){
+        bindForm($('#status-form'),async v=>{recordConnection(await request('orders/'+id+'/status',v));notify('Estado actualizado');await refresh();await detail(id);});
+        const deleteOrder=$('#delete-order');
+        if(deleteOrder)deleteOrder.onclick=async()=>{
+          if(!confirm(`¿Eliminar definitivamente el pedido #${r.IdPedido} y todas sus líneas? Esta acción no se puede deshacer.`))return;
+          try{await request('orders/'+id+'/delete',{});notify(`Pedido #${r.IdPedido} eliminado`);$('#order-detail').replaceChildren();await refresh();}
+          catch(e){notify(e.message);}
+        };
+        document.querySelectorAll('.remove-line').forEach(b=>b.onclick=async()=>{
+          if(!confirm('¿Quitar este servicio del pedido? El total se recalculará.'))return;
+          try{await request('orders/detalle/'+b.dataset.id+'/delete',{});notify('Servicio quitado del pedido');await detail(id);await refresh();}
+          catch(e){notify(e.message);}
+        });
+      }
     }catch(e){if(version===state.routeVersion)displayError(e.message);}
   }
   async function refresh(){

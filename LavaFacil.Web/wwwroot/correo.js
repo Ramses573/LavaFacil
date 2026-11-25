@@ -218,8 +218,10 @@ async function showVerify() {
     if (!/^\d{6}$/.test(codigo)) throw new Error('Escribe el código de 6 dígitos que enviamos a tu correo.');
     const result = await request('email/verificacion/confirmar', { codigo });
     if (result && result.verificado === false) throw new Error('El código no es válido o ya venció. Solicita uno nuevo.');
-    notify('Correo verificado.');
+    notify('Correo verificado. Tu cuenta quedó activada.');
     state.mail = null;
+    state.activacionPendiente = false;
+    state.correoVerificado = true;
     location.hash = 'home';
   });
 

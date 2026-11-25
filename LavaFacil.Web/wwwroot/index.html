@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LavaFácil · Gestión de lavandería</title><link rel="icon" href="/logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/features.css"><script defer src="/app.js"></script><script defer src="/features.js"></script><script defer src="/correo.js"></script></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LavaFácil · Gestión de lavandería</title><link rel="icon" href="/logo.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/features.css"><link rel="stylesheet" href="/mantenimientos.css"><script defer src="/app.js"></script><script defer src="/features.js"></script><script defer src="/mantenimientos.js"></script><script defer src="/correo.js"></script></head>
 <body>
 <div id="loading" class="loading">Preparando LavaFácil…</div>
 <div id="toast" class="toast" role="status" hidden></div>
 <header id="header" hidden>
   <a class="brand" href="#home"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></a>
-  <nav aria-label="Navegación principal"><a href="#home" data-route="home">Inicio</a><a href="#services" data-route="services">Servicios</a><a href="#orders" data-route="orders" id="orders-nav">Pedidos</a><a href="#clients" data-route="clients" id="clients-nav">Clientes</a><a href="#profile" data-route="profile">Mi perfil</a></nav>
+  <nav aria-label="Navegación principal"><a href="#home" data-route="home">Inicio</a><a href="#services" data-route="services">Servicios</a><a href="#orders" data-route="orders" id="orders-nav">Pedidos</a><a href="#clients" data-route="clients" id="clients-nav">Clientes</a><a href="#admin" data-route="admin" id="admin-nav">Administración</a><a href="#profile" data-route="profile">Mi perfil</a></nav>
   <div class="account"><a href="#profile" class="profile-link" title="Ver y editar mi perfil"><span id="avatar" class="avatar">—</span><span><strong id="account-name"></strong><small id="account-role"></small></span></a><button id="logout" class="button light small">Cerrar sesión</button></div>
 </header>
 <div id="mail-banner" class="notice mail-banner" role="status" aria-live="polite" hidden></div>
@@ -20,8 +20,39 @@
     <div class="form-error" role="alert" hidden></div><button class="button primary wide" type="submit">Iniciar sesión <span aria-hidden="true">→</span></button></form>
     <a href="#recuperar" id="forgot-link" class="mail-link" hidden>¿Olvidaste tu contraseña?</a>
     <a href="#registro" id="register-cta" class="button mint wide">¿No tienes cuenta? Crea una</a>
+    <a href="#inicio" class="mail-link" id="back-home-link">← Volver a la página principal</a>
     <p class="auth-foot">Ingresa con tu cuenta de cliente o empleado</p>
   </section></div>
+</template>
+<template id="landing-template">
+  <div class="landing">
+    <header class="landing-header">
+      <a class="brand" href="#inicio"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></a>
+      <nav aria-label="Secciones"><a href="#inicio" data-route="inicio">Inicio</a><a href="#inicio" data-landing="servicios">Servicios</a><a href="#inicio" data-landing="nosotros">Nosotros</a><a href="#inicio" data-landing="contacto">Contacto</a></nav>
+      <div class="landing-actions"><a href="#login" class="button light small">Iniciar sesión</a><a href="#registro" class="button mint small" id="landing-register">Crear cuenta</a></div>
+    </header>
+    <section class="hero">
+      <p class="hero-kicker">Lavandería en línea</p>
+      <h1 id="landing-title">Tu ropa limpia, sin complicaciones</h1>
+      <p class="hero-text" id="landing-description">Solicita el servicio en línea, consulta el avance de tus pedidos y recibe tu ropa lista.</p>
+      <div class="hero-actions"><a href="#registro" class="button mint" id="landing-start">Crear mi cuenta</a><a href="#login" class="button light">Ya tengo cuenta</a></div>
+      <ul class="hero-points"><li>Pedidos en línea</li><li>Comprobante PDF</li><li>Historial de servicios</li></ul>
+    </section>
+    <section class="landing-section" id="landing-servicios">
+      <h2>Nuestros servicios</h2>
+      <p class="muted">Tarifas vigentes. El excedente de cantidad se cobra por unidad adicional.</p>
+      <div id="landing-services" class="service-cards"><p class="muted">Consultando servicios…</p></div>
+    </section>
+    <section class="landing-section" id="landing-nosotros">
+      <h2>Sobre nosotros</h2>
+      <div id="landing-about" class="about-grid"></div>
+    </section>
+    <section class="landing-section" id="landing-contacto">
+      <h2>Contacto y horario</h2>
+      <div id="landing-contact" class="contact-grid"></div>
+    </section>
+    <footer class="landing-footer"><span id="landing-footer-name">LavaFácil</span><small>Lavandería · Proyecto académico TI-156</small></footer>
+  </div>
 </template>
 <template id="signup-template">
   <div class="setup-shell"><section class="card setup-card"><div class="brand auth-brand"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></div><h1>Crea tu cuenta de cliente</h1><p class="muted">Completa tus datos y podrás solicitar servicios de lavandería al instante.</p>
@@ -40,9 +71,9 @@
 </template>
 <template id="setup-template">
   <div class="setup-shell"><section class="card setup-card"><div class="brand auth-brand"><img src="/logo.svg" alt=""><span>Lava<span>Fácil</span></span></div><h1>Conectemos tu servidor</h1><p class="muted">Solo necesitas configurar esto una vez en tu laptop.</p>
-  <div class="notice">Primero ejecuta <strong>SQL/01_Procedimientos_App.sql</strong> y después <strong>SQL/04_Mejoras_Aplicativo.sql</strong> en la base LavaFacil del servidor principal desde SSMS.</div>
+  <div class="notice">Primero ejecuta <strong>SQL/01_Procedimientos_App.sql</strong>, después <strong>SQL/04_Mejoras_Aplicativo.sql</strong> y por último <strong>SQL/06_Mantenimientos.sql</strong> en la base LavaFacil del servidor principal desde SSMS.</div>
   <form id="setup-form" class="form-grid">
-  <label>Servidor principal<input name="server" value="100.98.252.109,1433" maxlength="200" required></label>
+  <label>Servidor principal<input name="server" value="127.0.0.1,1433" maxlength="200" required></label>
   <label>Base de datos<input name="database" value="LavaFacil" maxlength="128" required></label>
   <label>Usuario de SQL Server<input name="username" value="ramses_proyecto" maxlength="128" autocomplete="username" required></label>
   <label>Contraseña del usuario SQL<span class="password-field"><input name="password" type="password" maxlength="255" autocomplete="current-password" required><button type="button" class="eye" aria-label="Mostrar contraseña" aria-pressed="false">◉</button></span></label>
