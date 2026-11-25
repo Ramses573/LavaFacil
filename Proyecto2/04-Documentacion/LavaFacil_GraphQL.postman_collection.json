@@ -748,7 +748,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { insertarEmpleado(cedula: \"DEMO-POSTMAN-E001\", nombre: \"Empleado\", apellidos: \"Demostracion Postman\", telefono: \"71000001\", email: \"empleado.postman@demo.local\", cargo: \"Operador\", fechaIngreso: \"2026-11-17T08:00:00\") { exito mensaje } }",
+                    "query": "mutation { insertarEmpleado(cedula: \"DEMO-POSTMAN-E001\", nombre: \"Empleado\", apellidos: \"Demostracion Postman\", telefono: \"71000001\", email: \"empleado.postman@demo.local\", cargo: \"Empleado\", fechaIngreso: \"2026-11-17T08:00:00Z\") { exito mensaje } }",
                     "variables": ""
                   }
                 },
@@ -840,7 +840,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { actualizarEmpleado(idEmpleado: {{idEmpleadoDemo}}, cedula: \"DEMO-POSTMAN-E001\", nombre: \"Empleado Actualizado\", apellidos: \"Demostracion Postman\", telefono: \"71000002\", email: \"empleado.postman@demo.local\", cargo: \"Supervisor\", fechaIngreso: \"2026-11-17T08:00:00\") { exito mensaje } }",
+                    "query": "mutation { actualizarEmpleado(idEmpleado: {{idEmpleadoDemo}}, cedula: \"DEMO-POSTMAN-E001\", nombre: \"Empleado Actualizado\", apellidos: \"Demostracion Postman\", telefono: \"71000002\", email: \"empleado.postman@demo.local\", cargo: \"Administrador\", fechaIngreso: \"2026-11-17T08:00:00Z\") { exito mensaje } }",
                     "variables": ""
                   }
                 },
@@ -1441,7 +1441,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { insertarPedido(idCliente: {{idClienteBase}}, fechaEntregaEstimada: \"2026-12-01T15:00:00\", estado: \"Recibido\", total: 3500, observaciones: \"Pedido temporal Postman\") { exito mensaje } }",
+                    "query": "mutation { insertarPedido(idCliente: {{idClienteBase}}, fechaEntregaEstimada: \"2026-12-01T15:00:00Z\", estado: \"Recibido\", total: 3500, observaciones: \"Pedido temporal Postman\") { exito mensaje } }",
                     "variables": ""
                   }
                 },
@@ -1533,7 +1533,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { actualizarPedido(idPedido: {{idPedidoDemo}}, idCliente: {{idClienteBase}}, fechaEntregaEstimada: \"2026-12-02T15:00:00\", estado: \"En proceso\", total: 4200, observaciones: \"Pedido temporal Postman actualizado\") { exito mensaje } }",
+                    "query": "mutation { actualizarPedido(idPedido: {{idPedidoDemo}}, idCliente: {{idClienteBase}}, fechaEntregaEstimada: \"2026-12-02T15:00:00Z\", estado: \"En proceso\", total: 4200, observaciones: \"Pedido temporal Postman actualizado\") { exito mensaje } }",
                     "variables": ""
                   }
                 },
@@ -1903,7 +1903,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { insertarPago(idPedido: {{idPedidoBase}}, monto: 1500, metodoPago: \"Efectivo\", estadoPago: \"Completado\", referencia: \"POSTMAN-PAGO-DEMO\") { exito mensaje } }",
+                    "query": "mutation { insertarPago(idPedido: 2003, monto: 1500, metodoPago: \"Efectivo\", estadoPago: \"Pendiente\", referencia: \"POSTMAN-PAGO-DEMO\") { exito mensaje } }",
                     "variables": ""
                   }
                 },
@@ -1995,7 +1995,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { actualizarPago(idPago: {{idPagoDemo}}, idPedido: {{idPedidoBase}}, monto: 1750, metodoPago: \"Tarjeta\", estadoPago: \"Completado\", referencia: \"POSTMAN-PAGO-DEMO\") { exito mensaje } }",
+                    "query": "mutation { actualizarPago(idPago: {{idPagoDemo}}, idPedido: 2003, monto: 1750, metodoPago: \"SINPE Movil\", estadoPago: \"Pendiente\", referencia: \"POSTMAN-PAGO-DEMO\") { exito mensaje } }",
                     "variables": ""
                   }
                 },
@@ -2134,7 +2134,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { insertarRecoleccion(idPedido: {{idPedidoBase}}, direccion: \"Turrialba centro\", fechaProgramada: \"2026-12-03T09:00:00\", estado: \"Programada\", observaciones: \"POSTMAN-RECOLECCION-DEMO\") { exito mensaje } }",
+                    "query": "mutation { insertarRecoleccion(idPedido: {{idPedidoBase}}, direccion: \"Turrialba centro\", fechaProgramada: \"2026-12-03T09:00:00Z\", estado: \"Programada\", observaciones: \"POSTMAN-RECOLECCION-DEMO\") { exito mensaje } }",
                     "variables": ""
                   }
                 },
@@ -2226,7 +2226,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { actualizarRecoleccion(idRecoleccion: {{idRecoleccionDemo}}, idPedido: {{idPedidoBase}}, direccion: \"Cartago centro\", fechaProgramada: \"2026-12-04T10:00:00\", estado: \"Confirmada\", observaciones: \"POSTMAN-RECOLECCION-DEMO\") { exito mensaje } }",
+                    "query": "mutation { actualizarRecoleccion(idRecoleccion: {{idRecoleccionDemo}}, idPedido: {{idPedidoBase}}, direccion: \"Cartago centro\", fechaProgramada: \"2026-12-04T10:00:00Z\", estado: \"Confirmada\", observaciones: \"POSTMAN-RECOLECCION-DEMO\") { exito mensaje } }",
                     "variables": ""
                   }
                 },
@@ -2365,7 +2365,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { insertarPromocion(idServicio: {{idServicioBase}}, nombrePromocion: \"Promocion Postman Demo\", descripcion: \"Registro temporal\", porcentajeDescuento: 10, fechaInicio: \"2026-11-17T00:00:00\", fechaFin: \"2026-12-31T23:59:59\") { exito mensaje } }",
+                    "query": "mutation { insertarPromocion(idServicio: {{idServicioBase}}, nombrePromocion: \"Promocion Postman Demo\", descripcion: \"Registro temporal\", porcentajeDescuento: 10, fechaInicio: \"2026-11-17T00:00:00Z\", fechaFin: \"2026-12-31T23:59:59Z\") { exito mensaje } }",
                     "variables": ""
                   }
                 },
@@ -2457,7 +2457,7 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation { actualizarPromocion(idPromocion: {{idPromocionDemo}}, idServicio: {{idServicioBase}}, nombrePromocion: \"Promocion Postman Actualizada\", descripcion: \"Registro temporal actualizado\", porcentajeDescuento: 15, fechaInicio: \"2026-11-17T00:00:00\", fechaFin: \"2026-12-31T23:59:59\") { exito mensaje } }",
+                    "query": "mutation { actualizarPromocion(idPromocion: {{idPromocionDemo}}, idServicio: {{idServicioBase}}, nombrePromocion: \"Promocion Postman Actualizada\", descripcion: \"Registro temporal actualizado\", porcentajeDescuento: 15, fechaInicio: \"2026-11-17T00:00:00Z\", fechaFin: \"2026-12-31T23:59:59Z\") { exito mensaje } }",
                     "variables": ""
                   }
                 },

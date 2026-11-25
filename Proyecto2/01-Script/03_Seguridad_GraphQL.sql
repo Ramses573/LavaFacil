@@ -37,7 +37,7 @@ GO
 DECLARE @sql nvarchar(max) = N'';
 SELECT @sql += N'GRANT EXECUTE ON OBJECT::' + QUOTENAME(SCHEMA_NAME(schema_id)) + N'.' + QUOTENAME(name) + N' TO [gql_empleado];' + CHAR(13)
 FROM sys.procedures
-WHERE name LIKE N'Insertar%' OR name LIKE N'Actualizar%' OR name LIKE N'Eliminar%' OR name LIKE N'Consultar%' OR name = N'usp_ValidarLogin';
+WHERE name LIKE N'Insertar%' OR name LIKE N'Actualizar%' OR name LIKE N'Eliminar%' OR name LIKE N'Consultar%' OR name IN (N'usp_ValidarLogin', N'app_ActualizarPagoSeguro');
 EXEC sys.sp_executesql @sql;
 GO
 
